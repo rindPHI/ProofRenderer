@@ -1,19 +1,26 @@
 grammar Proof;
 
-init : defop * proof defop *;
+init
+	:	defop * proof defop *;
 
-defop : LPAREN 'defop' OPID STRING INT oppos ? RPAREN;
+defop
+	:	LPAREN 'defop' OPID STRING INT oppos ? RPAREN;
 oppos
 	:	'infix'
 	|	'prefix'
 	|	'suffix'
 	;
 
-proof : LPAREN 'proof' LPAREN subtree RPAREN RPAREN;
+proof
+	:	LPAREN 'proof' LPAREN subtree RPAREN RPAREN;
 
 subtree
-	:	operator + subtree ?
-	|	LPAREN operator + subtree ? RPAREN
+	:	( operator | labeledOperator ) + subtree ?
+	|	LPAREN (operator | labeledOperator ) + subtree ? RPAREN
+	;
+
+labeledOperator
+	:	STRING ':' operator
 	;
 
 operator
@@ -21,12 +28,19 @@ operator
 	|	LPAREN OPID operator * RPAREN
 	;
 
-OPID : [a-zA-Z]+;
+OPID
+	:	[a-zA-Z]+;
 
-LPAREN : '(';
-RPAREN : ')';
+LPAREN
+	:	'(';
+RPAREN
+	:	')';
 
-INT : '-' ? [0-9]+;
-STRING : '"' (~'"')* '"';
-WHITESPACE : [ \t\n\r]+ -> skip;
-COMMENT : ';' (~ '\n')* -> skip;
+INT
+	:	'-' ? [0-9]+;
+STRING
+	:	'"' (~'"')* '"';
+WHITESPACE
+	:	[ \t\n\r]+ -> skip;
+COMMENT
+	:	';' (~ '\n')* -> skip;

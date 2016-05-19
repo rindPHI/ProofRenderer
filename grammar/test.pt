@@ -7,7 +7,7 @@
     (
         (lor "asdf" (lor "asdf" (neg "asdf")))
         (lor "asdf" (lor "asdf" "asdf"))
-        (seq "" (list (neg "p") (neg "q") (lor "p" "q")))
+        "FancySplitRule 1": (seq "" (list (neg "p") (neg "q") (lor "p" "q")))
         (
             "test"
             "test"
