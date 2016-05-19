@@ -1,0 +1,2 @@
+#!/bin/bash
+antlr4 -visitor -package de.tud.cs.se.ds.proofrenderer.parser -o ../genSrc/ de/tud/cs/se/ds/proofrenderer/parser/Proof.g4

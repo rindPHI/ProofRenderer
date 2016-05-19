@@ -4,7 +4,16 @@ init
 	:	defop * proof defop *;
 
 defop
-	:	LPAREN 'defop' OPID STRING INT oppos ? RPAREN;
+	:	LPAREN 'defop' opid opdef opprec oppos ? RPAREN;
+opid
+    :   ID
+    ;
+opdef
+    :   STRING
+    ;
+opprec
+    :   INT
+    ;
 oppos
 	:	'infix'
 	|	'prefix'
@@ -12,11 +21,11 @@ oppos
 	;
 
 proof
-	:	LPAREN 'proof' LPAREN subtree RPAREN RPAREN;
+	:	LPAREN 'proof' subtree RPAREN;
 
 subtree
-	:	( operator | labeledOperator ) + subtree ?
-	|	LPAREN (operator | labeledOperator ) + subtree ? RPAREN
+	:	( operator | labeledOperator ) + subtree *
+	|	LPAREN (operator | labeledOperator ) + subtree * RPAREN
 	;
 
 labeledOperator
@@ -25,10 +34,10 @@ labeledOperator
 
 operator
 	:	STRING
-	|	LPAREN OPID operator * RPAREN
+	|	LPAREN opid operator * RPAREN
 	;
 
-OPID
+ID
 	:	[a-zA-Z]+;
 
 LPAREN
