@@ -4,13 +4,13 @@
 (defop list ", " 0)
 (defop seq "\Rightarrow" -10)
 (proof
-(
-    (lor "asdf" (lor "asdf" (neg "asdf")))
-    (lor "asdf" (lor "asdf" "asdf"))
-    (seq "" (list (neg "p") (neg "q") (lor "p" "q"))
     (
-        "test"
-        "test"
+        (lor "asdf" (lor "asdf" (neg "asdf")))
+        (lor "asdf" (lor "asdf" "asdf"))
+        (seq "" (list (neg "p") (neg "q") (lor "p" "q")))
+        (
+            "test"
+            "test"
+        )
     )
 )
-))

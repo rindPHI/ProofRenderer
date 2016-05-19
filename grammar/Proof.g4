@@ -9,11 +9,11 @@ oppos
 	|	'suffix'
 	;
 
-proof : LPAREN 'proof' LPAREN oplist RPAREN;
+proof : LPAREN 'proof' LPAREN subtree RPAREN RPAREN;
 
-oplist
-	:	operator
-	|	LPAREN operator + RPAREN
+subtree
+	:	operator + subtree ?
+	|	LPAREN operator + subtree ? RPAREN
 	;
 
 operator
