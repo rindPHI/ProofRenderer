@@ -16,7 +16,7 @@ import de.tud.cs.se.ds.proofrenderer.parser.ProofParser;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofTreeLoader;
 
 @RunWith(Suite.class)
-@SuiteClasses({ TestParsing.class, TestRendering.class })
+@SuiteClasses({ TestParsing.class })
 public class TestSuite {
 
     public static ProofTree parse(String input) throws IOException {

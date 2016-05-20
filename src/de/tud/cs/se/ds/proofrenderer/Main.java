@@ -83,6 +83,6 @@ public class Main {
         final ProofTreeLoader loader = new ProofTreeLoader();
         final ProofTree parseResult = loader.visitInit(parser.init());
         
-        return parseResult.toString();
+        return new Renderer(parseResult).render();
     }
 }

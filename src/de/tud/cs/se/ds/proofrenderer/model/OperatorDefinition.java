@@ -7,7 +7,7 @@ public class OperatorDefinition implements ProofTreeModelElement {
     private OperatorPositions opPos;
     
     public static enum OperatorPositions {
-        PREFIX, INFIX, SUFFIX
+        PREFIX, INFIX, SUFFIX, PARAM
     }
     
     public OperatorDefinition(String name, String strDef, int precedence, OperatorPositions opPos) {

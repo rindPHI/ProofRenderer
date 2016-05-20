@@ -1,5 +1,7 @@
 package de.tud.cs.se.ds.proofrenderer.model;
 
+import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition.OperatorPositions;
+
 
 public class ProofNodeStringExpression extends ProofNodeExpression {
     private String expr;
@@ -14,6 +16,11 @@ public class ProofNodeStringExpression extends ProofNodeExpression {
 
     public void setExpr(String expr) {
         this.expr = expr;
+    }
+    
+    @Override
+    public OperatorDefinition getOperator() {
+        return new OperatorDefinition("STRING", "", Integer.MAX_VALUE, OperatorPositions.INFIX);
     }
     
     @Override

@@ -18,6 +18,7 @@ oppos
 	:	'infix'
 	|	'prefix'
 	|	'suffix'
+	|	'param'
 	;
 
 proof
