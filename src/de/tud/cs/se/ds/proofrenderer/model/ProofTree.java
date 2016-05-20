@@ -1,22 +1,26 @@
 package de.tud.cs.se.ds.proofrenderer.model;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ProofTree implements ProofTreeModelElement {
-    private ArrayList<OperatorDefinition> opdefs = null;
+    private HashMap<String, OperatorDefinition> opdefs = null;
     private SubTree subtree = null;
     
-    public ProofTree(ArrayList<OperatorDefinition> opdefs, SubTree subtree) {
+    public ProofTree(HashMap<String, OperatorDefinition> opdefs, SubTree subtree) {
         super();
         this.opdefs = opdefs;
         this.subtree = subtree;
     }
 
-    public ArrayList<OperatorDefinition> getOpdefs() {
+    public HashMap<String, OperatorDefinition> getOpdefs() {
         return opdefs;
     }
+    
+    public OperatorDefinition getOpdef(String name) {
+        return opdefs.get(name);
+    }
 
-    public void setOpdefs(ArrayList<OperatorDefinition> opdefs) {
+    public void setOpdefs(HashMap<String, OperatorDefinition> opdefs) {
         this.opdefs = opdefs;
     }
 
@@ -32,8 +36,8 @@ public class ProofTree implements ProofTreeModelElement {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         
-        for (OperatorDefinition opdef : opdefs) {
-            sb.append(opdef.toString())
+        for (String opdef : opdefs.keySet()) {
+            sb.append(getOpdef(opdef).toString())
                 .append("\n");
         }
 

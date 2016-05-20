@@ -10,9 +10,9 @@
 	<property name="build.dir" value="${basedir}/bin" />
 	<property name="lib.dir" value="${basedir}/lib" />
 
-	<path id="ProofRenderer">
+	<path id="ProofRenderer.classpath">
 		<pathelement location="bin" />
-		<pathelement location="lib" />
+		<pathelement location="${lib.dir}/antlr-4.5.3-complete.jar" />
 	</path>
 
 	<target name="init">
@@ -46,7 +46,8 @@
 	<target depends="init,parser" name="build">
 		<echo message="${ant.project.name}: ${ant.file}" />
 		<javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
-			<src path="src" />
+			<src path="${src.dir}" />
+			<src path="${gen.dir}" />
 			<classpath refid="ProofRenderer.classpath" />
 		</javac>
 	</target>

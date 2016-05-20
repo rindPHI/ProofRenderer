@@ -26,15 +26,13 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
 
     @Override
     public ProofTree visitInit(InitContext ctx) {
-        final ArrayList<OperatorDefinition> opdeflist = new ArrayList<OperatorDefinition>();
-
         for (DefopContext defop : ctx.defop()) {
-            opdeflist.add(visitDefop(defop));
+            visit(defop);
         }
 
         final SubTree subtree = visitProof(ctx.proof());
 
-        return new ProofTree(opdeflist, subtree);
+        return new ProofTree(opDefs, subtree);
     }
 
     @Override
@@ -126,11 +124,17 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
                 System.exit(1);
             }
 
-            final String label = visitOperatorLabel(ctx.operatorLabel())
-                    .getElem();
+            final String leftLabel = ctx.leftLabel() == null ? ""
+                    : visitOperatorLabel(ctx.leftLabel().operatorLabel())
+                            .getElem();
+
+            final String rightLabel = ctx.rightLabel() == null ? ""
+                    : visitOperatorLabel(ctx.rightLabel().operatorLabel())
+                            .getElem();
 
             return new ProofTreeModelElementWrapper<ProofNodeExpression>(
-                    new ProofNodeExpression(opdef, children, label));
+                    new ProofNodeExpression(opdef, children, leftLabel,
+                            rightLabel));
 
         }
     }
@@ -143,7 +147,10 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
     }
 
     private String stripQuotes(String str) {
-        return str.replaceAll("\"", "");
+        return str
+                .replaceAll("\"\"", "<><><>") // Funny hack for facilitating quoted quotation marks
+                .replaceAll("\"", "")
+                .replaceAll("<><><>", "\""); // Funny hack part II
     }
 
     private static class ProofTreeModelElementWrapper<T> implements

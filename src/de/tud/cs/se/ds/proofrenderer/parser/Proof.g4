@@ -30,15 +30,24 @@ subtree
 
 operator
 	:	STRING
-	|	( operatorLabel ':' ) ? LPAREN opid operator * RPAREN
+	|	( leftLabel ) ? LPAREN opid operator * RPAREN ( rightLabel ) ?
 	;
-	
+
+leftLabel
+	:	operatorLabel '->'
+	;
+
+rightLabel
+	:	'<-' operatorLabel
+	;
+
 operatorLabel
 	:	STRING
 	;
 
 ID
 	:	[a-zA-Z]+;
+
 
 LPAREN
 	:	'(';
@@ -48,7 +57,7 @@ RPAREN
 INT
 	:	'-' ? [0-9]+;
 STRING
-	:	'"' (~'"')* '"';
+	:	'"' ('""'|~'"')* '"';
 
 WHITESPACE
 	:	[ \t\n\r]+ -> skip;

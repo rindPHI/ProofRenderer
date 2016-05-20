@@ -5,13 +5,14 @@ import java.util.ArrayList;
 public class ProofNodeExpression implements ProofTreeModelElement {
     private OperatorDefinition operator = null;
     private ArrayList<ProofNodeExpression> children = null;
-    private String label = "";
+    private String leftLabel = "", rightLabel = "";
     
     public ProofNodeExpression(OperatorDefinition operator,
-            ArrayList<ProofNodeExpression> children, String label) {
+            ArrayList<ProofNodeExpression> children, String leftLabel, String rightLabel) {
         this.operator = operator;
         this.children = children;
-        this.label = label;
+        this.leftLabel = leftLabel;
+        this.rightLabel = rightLabel;
     }
 
     public ProofNodeExpression(OperatorDefinition operator,
@@ -38,12 +39,20 @@ public class ProofNodeExpression implements ProofTreeModelElement {
         this.children = children;
     }
     
-    public String getLabel() {
-        return label;
+    public String getLeftLabel() {
+        return leftLabel;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setLeftLabel(String label) {
+        this.leftLabel = label;
+    }
+
+    public String getRightLabel() {
+        return rightLabel;
+    }
+
+    public void setRightLabel(String rightLabel) {
+        this.rightLabel = rightLabel;
     }
 
     static class ProofNodeStringExpression extends ProofNodeExpression {
@@ -66,10 +75,10 @@ public class ProofNodeExpression implements ProofTreeModelElement {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         
-        if (label != null && !label.isEmpty()) {
+        if (leftLabel != null && !leftLabel.isEmpty()) {
             sb.append("\"")
-                .append(label)
-                .append("\": ");
+                .append(leftLabel)
+                .append("\" : ");
         }
         
         sb.append("(")
@@ -82,6 +91,12 @@ public class ProofNodeExpression implements ProofTreeModelElement {
         }
         
         sb.append(")");
+        
+        if (rightLabel != null && !rightLabel.isEmpty()) {
+            sb.append(" : \"")
+                .append(rightLabel)
+                .append("\"");
+        }
         
         return sb.toString();
     }

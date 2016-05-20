@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import de.tud.cs.se.ds.proofrenderer.exception.RendererException;
+import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition.OperatorPositions;
 import de.tud.cs.se.ds.proofrenderer.model.ProofNodeExpression;
+import de.tud.cs.se.ds.proofrenderer.model.ProofNodeStringExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
 import de.tud.cs.se.ds.proofrenderer.model.SubTree;
 
@@ -38,21 +40,66 @@ public class Renderer {
         
         Collections.reverse(reversedSeqBlock);
         
-        sb.append("\n")
-            .append(getInvRule(numSubtrees))
-            .append("{")
-            .append(reversedSeqBlock.get(0))
-            .append("}");
-        
-        for (int i = 1; i < reversedSeqBlock.size(); i++) {
+        int arity = numSubtrees;
+        for (int i = 0; i < reversedSeqBlock.size(); i++) {
+            final ProofNodeExpression op = reversedSeqBlock.get(i);
+            
+            if (!op.getLeftLabel().isEmpty()) {
+                sb.append("\n\\LeftLabel{\\scriptsize ")
+                    .append(op.getLeftLabel())
+                    .append("}");
+            }
+            
             sb.append("\n")
-                .append(getInvRule(1))
-                .append("{")
-                .append(reversedSeqBlock.get(i))
-                .append("}");
+                .append(getInvRule(arity))
+                .append("{$")
+                .append(render(op))
+                .append("$}");
+            
+            if (!op.getRightLabel().isEmpty()) {
+                sb.append("\n\\RightLabel{\\scriptsize ")
+                    .append(op.getRightLabel())
+                    .append("}");
+            }
+            
+            arity = 1;
         }
         
         return sb.toString();
+    }
+    
+    private String render(ProofNodeExpression expr) {
+        if (expr instanceof ProofNodeStringExpression) {
+            return expr.toString().replaceAll("\"", "");
+        } else {
+            final StringBuilder sb = new StringBuilder();
+            final OperatorPositions opPos = expr.getOperator().getOpPos();
+            
+            if (opPos == OperatorPositions.INFIX) {
+                final int numChildren = expr.getChildren().size();
+                for (int i = 0; i < numChildren; i++) {
+                    sb.append(render(expr.getChildren().get(i)));
+                    if (i < numChildren - 1) {
+                        sb.append(expr.getOperator().getStrDef());
+                    }
+                }
+            } else if (opPos == OperatorPositions.PREFIX || opPos == OperatorPositions.SUFFIX) {
+                if (opPos == OperatorPositions.PREFIX) {
+                    sb.append(expr.getOperator().getStrDef());
+                }
+                
+                for (ProofNodeExpression child : expr.getChildren()) {
+                    sb.append(render(child));
+                }
+                
+                if (opPos == OperatorPositions.SUFFIX) {
+                    sb.append(expr.getOperator().getStrDef());
+                }
+            } else {
+                throw new RendererException("Unsupported operator position: '" + opPos + "'");
+            }
+            return sb.toString();
+        }
     }
     
     private String getInvRule(int premises) {
