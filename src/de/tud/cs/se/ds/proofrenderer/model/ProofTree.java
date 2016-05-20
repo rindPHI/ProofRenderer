@@ -3,55 +3,43 @@ package de.tud.cs.se.ds.proofrenderer.model;
 import java.util.ArrayList;
 
 public class ProofTree implements ProofTreeModelElement {
-    private ArrayList<ProofNodeExpression> sequentialBlock = null;
-    private ArrayList<ProofTree> subtrees = null;
+    private ArrayList<OperatorDefinition> opdefs = null;
+    private SubTree subtree = null;
     
-    public ProofTree(ArrayList<ProofNodeExpression> sequentialBlock) {
-        this.sequentialBlock = sequentialBlock;
+    public ProofTree(ArrayList<OperatorDefinition> opdefs, SubTree subtree) {
+        super();
+        this.opdefs = opdefs;
+        this.subtree = subtree;
     }
-    
-    public ProofTree(ArrayList<ProofNodeExpression> sequentialBlock,
-            ArrayList<ProofTree> subtrees) {
-        this.sequentialBlock = sequentialBlock;
-        this.subtrees = subtrees;
+
+    public ArrayList<OperatorDefinition> getOpdefs() {
+        return opdefs;
     }
-    
-    public ArrayList<ProofNodeExpression> getSequentialBlock() {
-        return sequentialBlock;
+
+    public void setOpdefs(ArrayList<OperatorDefinition> opdefs) {
+        this.opdefs = opdefs;
     }
-    
-    public void setSequentialBlock(ArrayList<ProofNodeExpression> sequentialBlock) {
-        this.sequentialBlock = sequentialBlock;
+
+    public SubTree getSubtree() {
+        return subtree;
     }
-    
-    public ArrayList<ProofTree> getSubtrees() {
-        return subtrees;
-    }
-    
-    public void setSubtrees(ArrayList<ProofTree> subtrees) {
-        this.subtrees = subtrees;
+
+    public void setSubtree(SubTree subtree) {
+        this.subtree = subtree;
     }
     
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         
-        sb.append("(\n");
-        
-        final int numExpr = sequentialBlock.size();
-        int i = 0;
-        for (ProofNodeExpression expr : sequentialBlock) {
-            sb.append("\t");
-            sb.append(expr.toString());
-            if (++i < numExpr)
-                sb.append("\n");
+        for (OperatorDefinition opdef : opdefs) {
+            sb.append(opdef.toString())
+                .append("\n");
         }
-        
-        for (ProofTree subtree : subtrees) {
-            sb.append(subtree.toString().replaceAll("^|\n", "\n\t"));
-        }
-        
-        sb.append("\n)");
+
+        sb.append("\n(proof ");
+        sb.append(subtree.toString());
+        sb.append(")");
         
         return sb.toString();
     }

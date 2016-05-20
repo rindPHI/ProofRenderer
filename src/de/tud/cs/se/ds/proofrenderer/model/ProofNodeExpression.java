@@ -67,8 +67,9 @@ public class ProofNodeExpression implements ProofTreeModelElement {
         final StringBuilder sb = new StringBuilder();
         
         if (label != null && !label.isEmpty()) {
-            sb.append(label)
-                .append(": ");
+            sb.append("\"")
+                .append(label)
+                .append("\": ");
         }
         
         sb.append("(")

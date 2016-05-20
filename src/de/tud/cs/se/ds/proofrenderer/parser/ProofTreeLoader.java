@@ -8,6 +8,7 @@ import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition.OperatorPositions;
 import de.tud.cs.se.ds.proofrenderer.model.ProofNodeExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofNodeStringExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
+import de.tud.cs.se.ds.proofrenderer.model.SubTree;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTreeModelElement;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.DefopContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.InitContext;
@@ -25,15 +26,19 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
 
     @Override
     public ProofTree visitInit(InitContext ctx) {
+        final ArrayList<OperatorDefinition> opdeflist = new ArrayList<OperatorDefinition>();
+
         for (DefopContext defop : ctx.defop()) {
-            visit(defop);
+            opdeflist.add(visitDefop(defop));
         }
-        
-        return visitProof(ctx.proof());
+
+        final SubTree subtree = visitProof(ctx.proof());
+
+        return new ProofTree(opdeflist, subtree);
     }
 
     @Override
-    public ProofTreeModelElement visitDefop(DefopContext ctx) {
+    public OperatorDefinition visitDefop(DefopContext ctx) {
         final String opName = visitOpid(ctx.opid()).getElem();
         if (opDefs.containsKey(opName)) {
             System.err.println("Duplicate definition of operator '" + opName
@@ -56,7 +61,8 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
 
     @Override
     public ProofTreeModelElementWrapper<String> visitOpdef(OpdefContext ctx) {
-        return new ProofTreeModelElementWrapper<String>(ctx.getText());
+        return new ProofTreeModelElementWrapper<String>(stripQuotes(ctx
+                .STRING().getText()));
     }
 
     @Override
@@ -74,14 +80,14 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
     }
 
     @Override
-    public ProofTree visitProof(ProofContext ctx) {
+    public SubTree visitProof(ProofContext ctx) {
         return visitSubtree(ctx.subtree());
     }
 
     @Override
-    public ProofTree visitSubtree(SubtreeContext ctx) {
+    public SubTree visitSubtree(SubtreeContext ctx) {
         final ArrayList<ProofNodeExpression> sequentialBlock = new ArrayList<ProofNodeExpression>();
-        final ArrayList<ProofTree> subtrees = new ArrayList<ProofTree>();
+        final ArrayList<SubTree> subtrees = new ArrayList<SubTree>();
 
         for (OperatorContext operator : ctx.operator()) {
             sequentialBlock.add(visitOperator(operator).getElem());
@@ -91,7 +97,7 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
             subtrees.add(visitSubtree(operator));
         }
 
-        return new ProofTree(sequentialBlock, subtrees);
+        return new SubTree(sequentialBlock, subtrees);
     }
 
     @Override
@@ -100,8 +106,8 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
         if (ctx.STRING() != null) {
 
             return new ProofTreeModelElementWrapper<ProofNodeExpression>(
-                    new ProofNodeStringExpression(ctx.STRING().getText()
-                            .replaceAll("\"", "")));
+                    new ProofNodeStringExpression(stripQuotes(ctx.STRING()
+                            .getText())));
 
         }
         else {
@@ -115,7 +121,8 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
             final OperatorDefinition opdef = opDefs.get(opName);
 
             if (opdef == null) {
-                System.err.println("Unknown operator '" + opName + "' at line " + ctx.getStart().getLine());
+                System.err.println("Unknown operator '" + opName + "' at line "
+                        + ctx.getStart().getLine());
                 System.exit(1);
             }
 
@@ -131,8 +138,12 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
     @Override
     public ProofTreeModelElementWrapper<String> visitOperatorLabel(
             OperatorLabelContext ctx) {
-        return new ProofTreeModelElementWrapper<String>(ctx == null ? "" : ctx
-                .STRING().getText().replaceAll("\"", ""));
+        return new ProofTreeModelElementWrapper<String>(ctx == null ? ""
+                : stripQuotes(ctx.STRING().getText()));
+    }
+
+    private String stripQuotes(String str) {
+        return str.replaceAll("\"", "");
     }
 
     private static class ProofTreeModelElementWrapper<T> implements

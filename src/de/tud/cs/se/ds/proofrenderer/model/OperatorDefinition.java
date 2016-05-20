@@ -61,8 +61,8 @@ public class OperatorDefinition implements ProofTreeModelElement {
             .append("\" ")
             .append(precedence)
             .append(" ")
-            .append(opPos)
-            .append(")\n");
+            .append(opPos.toString().toLowerCase())
+            .append(")");
         
         return sb.toString();
     }
