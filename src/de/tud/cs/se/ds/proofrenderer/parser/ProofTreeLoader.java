@@ -147,10 +147,7 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
     }
 
     private String stripQuotes(String str) {
-        return str
-                .replaceAll("\"\"", "<><><>") // Funny hack for facilitating quoted quotation marks
-                .replaceAll("\"", "")
-                .replaceAll("<><><>", "\""); // Funny hack part II
+        return str.replaceAll("\"", ""); // Funny hack part II
     }
 
     private static class ProofTreeModelElementWrapper<T> implements

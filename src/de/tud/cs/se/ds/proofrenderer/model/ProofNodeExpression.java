@@ -78,7 +78,7 @@ public class ProofNodeExpression implements ProofTreeModelElement {
         if (leftLabel != null && !leftLabel.isEmpty()) {
             sb.append("\"")
                 .append(leftLabel)
-                .append("\" : ");
+                .append("\" -> ");
         }
         
         sb.append("(")
@@ -93,7 +93,7 @@ public class ProofNodeExpression implements ProofTreeModelElement {
         sb.append(")");
         
         if (rightLabel != null && !rightLabel.isEmpty()) {
-            sb.append(" : \"")
+            sb.append(" <- \"")
                 .append(rightLabel)
                 .append("\"");
         }
