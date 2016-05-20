@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="ProofRenderer">
+
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="target" value="1.8" />
+	<property name="source" value="1.8" />
+
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="gen.dir" value="${basedir}/genSrc" />
+	<property name="build.dir" value="${basedir}/bin" />
+	<property name="lib.dir" value="${basedir}/lib" />
+
+	<path id="ProofRenderer">
+		<pathelement location="bin" />
+		<pathelement location="lib" />
+	</path>
+
+	<target name="init">
+		<mkdir dir="bin" />
+		<mkdir dir="genSrc" />
+		<copy includeemptydirs="false" todir="bin">
+			<fileset dir="src">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="clean">
+		<delete dir="bin" />
+	</target>
+
+	<target depends="clean" name="cleanall" />
+
+	<target name="parser">
+		<echo message="Running antlr ..." />
+		<java jar="${lib.dir}/antlr-4.5.3-complete.jar" fork="true" failonerror="true">
+			<arg value="-visitor" />
+			<arg value="-package" />
+			<arg value="de.tud.cs.se.ds.proofrenderer.parser" />
+			<arg value="-o" />
+			<arg value="${gen.dir}/de/tud/cs/se/ds/proofrenderer/parser/" />
+			<arg value="${src.dir}/de/tud/cs/se/ds/proofrenderer/parser/Proof.g4" />
+		</java>
+	</target>
+
+	<target depends="init,parser" name="build">
+		<echo message="${ant.project.name}: ${ant.file}" />
+		<javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+			<src path="src" />
+			<classpath refid="ProofRenderer.classpath" />
+		</javac>
+	</target>
+</project>

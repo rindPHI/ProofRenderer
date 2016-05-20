@@ -31,4 +31,28 @@ public class ProofTree implements ProofTreeModelElement {
     public void setSubtrees(ArrayList<ProofTree> subtrees) {
         this.subtrees = subtrees;
     }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        
+        sb.append("(\n");
+        
+        final int numExpr = sequentialBlock.size();
+        int i = 0;
+        for (ProofNodeExpression expr : sequentialBlock) {
+            sb.append("\t");
+            sb.append(expr.toString());
+            if (++i < numExpr)
+                sb.append("\n");
+        }
+        
+        for (ProofTree subtree : subtrees) {
+            sb.append(subtree.toString().replaceAll("^|\n", "\n\t"));
+        }
+        
+        sb.append("\n)");
+        
+        return sb.toString();
+    }
 }

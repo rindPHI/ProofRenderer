@@ -24,17 +24,17 @@ proof
 	:	LPAREN 'proof' subtree RPAREN;
 
 subtree
-	:	( operator | labeledOperator ) + subtree *
-	|	LPAREN (operator | labeledOperator ) + subtree * RPAREN
-	;
-
-labeledOperator
-	:	STRING ':' operator
+	:	operator + subtree *
+	|	LPAREN operator + subtree * RPAREN
 	;
 
 operator
 	:	STRING
-	|	LPAREN opid operator * RPAREN
+	|	( operatorLabel ':' ) ? LPAREN opid operator * RPAREN
+	;
+	
+operatorLabel
+	:	STRING
 	;
 
 ID
@@ -49,6 +49,7 @@ INT
 	:	'-' ? [0-9]+;
 STRING
 	:	'"' (~'"')* '"';
+
 WHITESPACE
 	:	[ \t\n\r]+ -> skip;
 COMMENT

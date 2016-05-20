@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class ProofNodeExpression implements ProofTreeModelElement {
     private OperatorDefinition operator = null;
     private ArrayList<ProofNodeExpression> children = null;
-    private String label = null;
+    private String label = "";
     
     public ProofNodeExpression(OperatorDefinition operator,
             ArrayList<ProofNodeExpression> children, String label) {
@@ -20,7 +20,7 @@ public class ProofNodeExpression implements ProofTreeModelElement {
         this.children = children;
     }
     
-    private ProofNodeExpression() {}
+    protected ProofNodeExpression() {}
 
     public OperatorDefinition getOperator() {
         return operator;
@@ -46,7 +46,7 @@ public class ProofNodeExpression implements ProofTreeModelElement {
         this.label = label;
     }
 
-    class ProofNodeStringExpression extends ProofNodeExpression {
+    static class ProofNodeStringExpression extends ProofNodeExpression {
         private String expr;
         
         public ProofNodeStringExpression(String expr) {
@@ -60,5 +60,28 @@ public class ProofNodeExpression implements ProofTreeModelElement {
         public void setExpr(String expr) {
             this.expr = expr;
         }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        
+        if (label != null && !label.isEmpty()) {
+            sb.append(label)
+                .append(": ");
+        }
+        
+        sb.append("(")
+            .append(operator.getName())
+            .append(" ");
+        
+        for (ProofNodeExpression child : children) {
+            sb.append(" ")
+                .append(child);
+        }
+        
+        sb.append(")");
+        
+        return sb.toString();
     }
 }

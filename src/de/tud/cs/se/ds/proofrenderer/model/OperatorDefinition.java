@@ -50,5 +50,20 @@ public class OperatorDefinition implements ProofTreeModelElement {
         this.opPos = opPos;
     }
     
-    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        
+        sb.append("(defop ")
+            .append(name)
+            .append(" \"")
+            .append(strDef)
+            .append("\" ")
+            .append(precedence)
+            .append(" ")
+            .append(opPos)
+            .append(")\n");
+        
+        return sb.toString();
+    }
 }
