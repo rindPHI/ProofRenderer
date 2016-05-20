@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import de.tud.cs.se.ds.proofrenderer.exception.RendererException;
+import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition;
 import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition.OperatorPositions;
 import de.tud.cs.se.ds.proofrenderer.model.ProofNodeExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofNodeStringExpression;
@@ -75,17 +76,10 @@ public class Renderer {
             if (opPos == OperatorPositions.INFIX) {
                 for (int i = 0; i < numChildren; i++) {
                     final ProofNodeExpression child = expr.getChildren().get(i);
-                    final boolean bindsStronger = expr.getOperator()
-                            .getPrecedence() > child.getOperator()
-                            .getPrecedence();
 
-                    if (bindsStronger) {
-                        sb.append("(");
-                    }
-                    sb.append(render(child));
-                    if (bindsStronger) {
-                        sb.append(")");
-                    }
+                    sb.append(putParenthesesWithPrecedence(expr.getOperator(),
+                            child.getOperator(), render(child)));
+
                     if (i < numChildren - 1) {
                         sb.append(expr.getOperator().getStrDef());
                     }
@@ -98,17 +92,10 @@ public class Renderer {
                 }
 
                 for (ProofNodeExpression child : expr.getChildren()) {
-                    final boolean bindsStronger = expr.getOperator()
-                            .getPrecedence() > child.getOperator()
-                            .getPrecedence();
 
-                    if (bindsStronger) {
-                        sb.append("(");
-                    }
-                    sb.append(render(child));
-                    if (bindsStronger) {
-                        sb.append(")");
-                    }
+                    sb.append(putParenthesesWithPrecedence(expr.getOperator(),
+                            child.getOperator(), render(child)));
+                    
                 }
 
                 if (opPos == OperatorPositions.SUFFIX) {
@@ -131,6 +118,24 @@ public class Renderer {
             }
             return sb.toString();
         }
+    }
+
+    private String putParenthesesWithPrecedence(OperatorDefinition op1,
+            OperatorDefinition op2, String expr) {
+        final StringBuilder sb = new StringBuilder();
+        final boolean bindsStronger = op1.getPrecedence() > op2.getPrecedence();
+
+        if (bindsStronger) {
+            sb.append("(");
+        }
+        
+        sb.append(expr);
+        
+        if (bindsStronger) {
+            sb.append(")");
+        }
+        
+        return sb.toString();
     }
 
     private String getInvRule(int premises) {
