@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="build" name="ProofRenderer">
+<project basedir="." default="deploy" name="ProofRenderer">
 
 	<property name="debuglevel" value="source,lines,vars" />
 	<property name="target" value="1.8" />
@@ -8,7 +8,10 @@
 	<property name="src.dir" value="${basedir}/src" />
 	<property name="gen.dir" value="${basedir}/genSrc" />
 	<property name="build.dir" value="${basedir}/bin" />
+	<property name="dist.dir" value="${basedir}/dist" />
 	<property name="lib.dir" value="${basedir}/lib" />
+	<property name="jar.file" value="${dist.dir}/ProofRenderer.jar" />
+	<property name="main-class" value="de.tud.cs.se.ds.proofrenderer.Main" />
 
 	<path id="ProofRenderer.classpath">
 		<pathelement location="bin" />
@@ -27,6 +30,7 @@
 
 	<target name="clean">
 		<delete dir="bin" />
+		<delete dir="dist" />
 	</target>
 
 	<target depends="clean" name="cleanall" />
@@ -50,5 +54,25 @@
 			<src path="${gen.dir}" />
 			<classpath refid="ProofRenderer.classpath" />
 		</javac>
+	</target>
+
+	<target name="deploy" depends="build">
+		<mkdir dir="${dist.dir}" />
+		
+		<path id="jar.classpath">
+			<pathelement location="lib/antlr-4.5.3-complete.jar" />
+		</path>
+
+		<manifestclasspath property="manifest.classpath" jarfile="${jar.file}">
+			<classpath refid="jar.classpath" />
+		</manifestclasspath>
+
+		<jar destfile="${jar.file}" basedir="${build.dir}">
+			<zipgroupfileset dir="${lib.dir}" includes="*.jar"/>
+			<manifest>
+				<attribute name="Main-Class" value="${main-class}" />
+				<attribute name="Class-Path" value="${manifest.classpath}" />
+			</manifest>
+		</jar>
 	</target>
 </project>
