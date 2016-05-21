@@ -5,7 +5,9 @@ package de.tud.cs.se.ds.proofrenderer;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -33,25 +35,15 @@ import de.tud.cs.se.ds.proofrenderer.renderer.ProofRenderer;
 public class Main {
 
     private File proofTreeFile = null;
+    private File output = null;
+    private ProofRenderer renderer = null;
 
     /**
      * TODO
      * 
      * @param proofTreeFile
      */
-    public Main(File proofTreeFile) {
-        this.proofTreeFile = proofTreeFile;
-    }
-
-    /**
-     * TODO
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
-        File proofTreeFile = null;
-        ProofRenderer renderer = null;
-
+    public Main(String[] args) {
         // Command line arguments handling
         final Options clopt = new Options();
         clopt.addOption(Option.builder("f").argName("FILE").longOpt("file")
@@ -61,8 +53,11 @@ public class Main {
                 .longOpt("renderer")
                 .desc("The renderer for the proof [*latex* | plain]")
                 .required(false).hasArg().build());
-        clopt.addOption(Option.builder("h").hasArg(false)
+        clopt.addOption(Option.builder("h").longOpt("help").hasArg(false)
                 .desc("Display this help").required(false).build());
+        clopt.addOption(Option.builder("o").longOpt("output").hasArg()
+                .desc("Desired output file or - for command line output")
+                .build());
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -74,8 +69,7 @@ public class Main {
                 throw new ParseException("The given file does not exist.");
             }
 
-            final String rendererVal = parsed.hasOption('r') ? parsed
-                    .getOptionValue('r') : "latex";
+            final String rendererVal = parsed.getOptionValue('r', "latex");
 
             if (rendererVal.equals("latex")) {
                 renderer = new LatexRenderer();
@@ -88,6 +82,11 @@ public class Main {
                         + "'");
             }
 
+            final String outputVal = parsed.getOptionValue('o', "-");
+
+            if (!outputVal.equals("-")) {
+                output = new File(outputVal);
+            }
         }
         catch (ParseException e1) {
             System.err.println(e1.getMessage());
@@ -96,22 +95,44 @@ public class Main {
             System.exit(1);
         }
         // END Command line arguments handlingSystem.exit(1);
+    }
 
-        final Main instance = new Main(proofTreeFile);
-
+    /**
+     * TODO
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
+        final Main instance = new Main(args);
+        String rendered = null;
         try {
-            String rendered = instance.render(renderer);
-            System.out.println(rendered);
+            rendered = instance.render();
         }
         catch (IOException e) {
             System.err.println("Error while reading file '"
-                    + proofTreeFile.getAbsolutePath() + "':");
+                    + instance.proofTreeFile.getAbsolutePath() + "':");
+            System.err.println(e.getLocalizedMessage());
+            System.exit(1);
+        }
+
+        try {
+            instance.output(rendered);
+        }
+        catch (IOException e) {
+            System.err.println("Error while writing to file '"
+                    + instance.output.getAbsolutePath() + "':");
             System.err.println(e.getLocalizedMessage());
             System.exit(1);
         }
     }
 
-    public String render(ProofRenderer renderer) throws IOException {
+    public String render() throws FileNotFoundException, IOException {
+        ProofTree parseResult = parse();
+
+        return renderer.render(parseResult);
+    }
+
+    public ProofTree parse() throws IOException, FileNotFoundException {
         final ProofLexer lexer = new ProofLexer(new ANTLRInputStream(
                 new FileInputStream(proofTreeFile)));
         final CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -120,6 +141,14 @@ public class Main {
         final ProofTreeLoader loader = new ProofTreeLoader();
         final ProofTree parseResult = loader.visitInit(parser.init());
 
-        return renderer.render(parseResult);
+        return parseResult;
+    }
+    
+    private void output(String str) throws IOException {
+        if (output == null) {
+            System.out.println(str);
+        } else {
+            Files.write(output.toPath(), str.getBytes());
+        }
     }
 }
