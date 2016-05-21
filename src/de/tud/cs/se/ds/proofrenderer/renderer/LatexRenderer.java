@@ -1,4 +1,4 @@
-package de.tud.cs.se.ds.proofrenderer;
+package de.tud.cs.se.ds.proofrenderer.renderer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,15 +11,17 @@ import de.tud.cs.se.ds.proofrenderer.model.ProofNodeStringExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
 import de.tud.cs.se.ds.proofrenderer.model.SubTree;
 
-public class Renderer {
+public class LatexRenderer implements ProofRenderer {
 
-    private final ProofTree proofTree;
+    private ProofTree proofTree = null;
 
-    public Renderer(ProofTree proofTree) {
-        this.proofTree = proofTree;
+    @Override
+    public String render(ProofTree tree) {
+        this.proofTree = tree;
+        return render();
     }
 
-    public String render() {
+    private String render() {
         final StringBuilder sb = new StringBuilder();
 
         sb.append("\\begin{prooftree}").append(render(proofTree.getSubtree()))
