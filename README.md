@@ -113,3 +113,17 @@ Using the command `java -jar dist/ProofRenderer.jar -f test/test.pt -r plain` yo
 	)
 ))
 ```
+
+## Input Syntax
+
+Within the `proof` environment, you can, for each node, either use Strings (including LaTeX macros; everything will be put into a math environment) or *operators* that you defined in the file yourself. The syntax for operator definitions is as follows:
+
+```antrl
+defop : '(' 'defop' opid opdef opprec oppos? ')';
+opid : ID;
+opdef : STRING;
+opprec : INT;
+oppos :	'infix' | 'prefix' | 'suffix' | 'param';
+```
+
+`opid` is the name of the operator, e.g. `lor` as in the examples above, `opdef` is the LaTeX definition, e.g. `" \lor "`, `opprec` is the (positive) precedence of the operator, where low numbers bind weaker than higher numbers, and `oppos` is the operator position. For infix, prefix, and suffix operators, an arbitrary number of arguments can be supplied. Parentheses will be put according to the given precedence. The `param` option allows for the definition of operators with LaTeX-like parameters; here, the number of parameters has to match, of course.
