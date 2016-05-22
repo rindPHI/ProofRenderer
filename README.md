@@ -74,6 +74,8 @@ The command `java -jar dist/ProofRenderer.jar -f test/test.pt` renders this to
 \end{prooftree}
 ```
 
+(Note that you have to `\usepackage{bussproofs}` in your document to compile this; also, don't put the prooftree environment into a math environment.)
+
 Using the command `java -jar dist/ProofRenderer.jar -f test/test.pt -r plain` you can clean up the messy proof tree definition in the file `test.pt`:
 
 ```lisp
