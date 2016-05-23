@@ -25,6 +25,7 @@ Consider the following input file content of the file `test/test.pt` (which is b
 (defop land " \land " 30)
 (defop neg "\neg " 40 prefix)
 (defop list ", " 10)
+(macro implies 0 "\Longrightarrow")
 (defop modality "\left[#1\right]#2" 40 param)
 (defop text "\textrm{#1}" 99999 param)
 (proof
@@ -48,7 +49,7 @@ Consider the following input file content of the file `test/test.pt` (which is b
         (text "And a third branch!!!")
     )
 )
-(defop seq "\Rightarrow " 0)
+(defop seq "\implies  " 0)
 ```
 
 The command `java -jar dist/ProofRenderer.jar -f test/test.pt -r standalone-latex` renders this to
@@ -59,9 +60,10 @@ The command `java -jar dist/ProofRenderer.jar -f test/test.pt -r standalone-late
 
 \begin{document}
 
+\newcommand{\implies}[0]{\Longrightarrow}
 \begin{prooftree}
 \AxiomC{$\neg p$}
-\UnaryInfC{$p \lor \neg q\Rightarrow succedent$}
+\UnaryInfC{$p \lor \neg q\implies  succedent$}
 \UnaryInfC{$test$}
 \UnaryInfC{$test$}
 \UnaryInfC{$subtree1$}
@@ -69,13 +71,13 @@ The command `java -jar dist/ProofRenderer.jar -f test/test.pt -r standalone-late
 \UnaryInfC{$subtree2$}
 \AxiomC{$\textrm{And a third branch!!!}$}
 \LeftLabel{\scriptsize FancySplitRule 1}
-\TrinaryInfC{$\Rightarrow \neg p, \neg q, p \lor q$}
+\TrinaryInfC{$\implies  \neg p, \neg q, p \lor q$}
 \UnaryInfC{$asdf \lor asdf \lor asdf$}
 \RightLabel{\scriptsize That's ``a'' right label!}
 \UnaryInfC{$p \land q \lor q \land p$}
 \UnaryInfC{$(p \lor q) \land (q \lor p)$}
 \UnaryInfC{$\neg (p \lor q)$}
-\UnaryInfC{$\Rightarrow \left[p\right]\phi$}
+\UnaryInfC{$\implies  \left[p\right]\phi$}
 \UnaryInfC{$asdf \lor asdf \lor \neg asdf$}
 \end{prooftree}
 
@@ -89,13 +91,14 @@ PDFLaTeX compilation result:
 Using the command `java -jar dist/ProofRenderer.jar -f test/test.pt -r plain` you can clean up the messy proof tree definition in the file `test.pt`:
 
 ```lisp
+(macro implies 0 "\Longrightarrow")
 (defop neg "\neg " 40 prefix)
 (defop modality "\left[#1\right]#2" 40 param)
 (defop land " \land " 30 infix)
 (defop text "\textrm{#1}" 99999 param)
 (defop list ", " 10 infix)
 (defop lor " \lor " 20 infix)
-(defop seq "\Rightarrow " 0 infix)
+(defop seq "\implies  " 0 infix)
 
 (proof (
 	(lor  "asdf" (lor  "asdf" (neg  "asdf")))
