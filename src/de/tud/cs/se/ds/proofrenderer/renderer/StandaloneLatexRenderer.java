@@ -17,18 +17,19 @@ import de.tud.cs.se.ds.proofrenderer.model.Usepackage;
 public class StandaloneLatexRenderer extends LatexRenderer implements
         ProofRenderer {
     private boolean fitToPage = false;
-    
+
     @Override
     public String render(ProofTree tree, String[] args) {
         final Options clopt = new Options();
 
-        clopt.addOption(Option.builder("f").longOpt("fit-to-page").hasArg(false)
-                .desc("Fit proof tree to page size").required(false).build());
+        clopt.addOption(Option.builder("f").longOpt("fit-to-page")
+                .hasArg(false).desc("Fit proof tree to page size")
+                .required(false).build());
 
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine parsed = parser.parse(clopt, args);
-            
+
             if (parsed.hasOption("f")) {
                 fitToPage = true;
             }
@@ -39,10 +40,10 @@ public class StandaloneLatexRenderer extends LatexRenderer implements
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("--renderer-args \"...\"", clopt);
         }
-        
+
         return render(tree);
     }
-    
+
     @Override
     public String render(ProofTree tree) {
         final StringBuilder sb = new StringBuilder();
@@ -54,7 +55,7 @@ public class StandaloneLatexRenderer extends LatexRenderer implements
         if (fitToPage) {
             packages.add(new Usepackage("graphics", ""));
         }
-        
+
         for (Usepackage usepackage : packages) {
             sb.append(render(usepackage));
         }
@@ -63,17 +64,30 @@ public class StandaloneLatexRenderer extends LatexRenderer implements
             sb.append(render(tree.getMacrodef(macro)));
         }
 
+        if (fitToPage) {
+            sb.append("\n\\newenvironment{scprooftree}[1]%\n")
+                    .append("\t{\\gdef\\scalefactor{#1}\\begin{center}\\proofSkipAmount \\leavevmode}%\n")
+                    .append("\t{\\resizebox{\\scalefactor}{!}{\\DisplayProof}\\proofSkipAmount \\end{center} }\n");
+        }
+
         sb.append("\n\\begin{document}\n\n");
 
         if (fitToPage) {
             sb.append("\\resizebox{\\paperwidth}{!}{");
         }
-        
-        sb.append("\\begin{prooftree}").append(render(tree.getSubtree()))
-                .append("\n\\end{prooftree}");
 
         if (fitToPage) {
-            sb.append("}");
+            sb.append("\\begin{scprooftree}{\\textwidth}");
+        } else {
+            sb.append("\\begin{prooftree}");
+        }
+        
+        sb.append(render(tree.getSubtree()));
+        
+        if (fitToPage) {
+            sb.append("\n\\end{scprooftree}");
+        } else {
+            sb.append("\n\\end{prooftree}");
         }
 
         sb.append("\n\n\\end{document}");

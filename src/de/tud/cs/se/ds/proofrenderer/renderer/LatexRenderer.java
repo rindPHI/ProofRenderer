@@ -65,10 +65,15 @@ public class LatexRenderer implements ProofRenderer {
         final Set<Usepackage> packages = proofTree.getUsePackages();
         if (fitToPage) {
             packages.add(new Usepackage("graphics", ""));
+            
+            sb.append("%%% Put into preamble:\n");
+            sb.append("% \\newenvironment{scprooftree}[1]%\n")
+                    .append("%\t{\\gdef\\scalefactor{#1}\\begin{center}\\proofSkipAmount \\leavevmode}%\n")
+                    .append("%\t{\\resizebox{\\scalefactor}{!}{\\DisplayProof}\\proofSkipAmount \\end{center} }\n");
         }
         
         for (Usepackage usepackage : packages) {
-            sb.append("% Put into preamble:\n")
+            sb.append("%%% Put into preamble:\n")
                 .append("% ")
                 .append(render(usepackage));
         }
@@ -84,12 +89,19 @@ public class LatexRenderer implements ProofRenderer {
         if (fitToPage) {
             sb.append("\\resizebox{\\paperwidth}{!}{");
         }
-        
-        sb.append("\\begin{prooftree}").append(render(proofTree.getSubtree()))
-                .append("\n\\end{prooftree}");
 
         if (fitToPage) {
-            sb.append("}");
+            sb.append("\\begin{scprooftree}{\\textwidth}");
+        } else {
+            sb.append("\\begin{prooftree}");
+        }
+        
+        sb.append(render(proofTree.getSubtree()));
+        
+        if (fitToPage) {
+            sb.append("\n\\end{scprooftree}");
+        } else {
+            sb.append("\n\\end{prooftree}");
         }
         
         return sb.toString();
