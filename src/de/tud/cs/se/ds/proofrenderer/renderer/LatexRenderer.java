@@ -85,10 +85,6 @@ public class LatexRenderer implements ProofRenderer {
         if (proofTree.getUsePackages().size() > 0 || proofTree.getMacrodefs().size() > 0) {
             sb.append("\n");
         }
-        
-        if (fitToPage) {
-            sb.append("\\resizebox{\\paperwidth}{!}{");
-        }
 
         if (fitToPage) {
             sb.append("\\begin{scprooftree}{\\textwidth}");

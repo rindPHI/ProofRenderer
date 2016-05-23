@@ -73,10 +73,6 @@ public class StandaloneLatexRenderer extends LatexRenderer implements
         sb.append("\n\\begin{document}\n\n");
 
         if (fitToPage) {
-            sb.append("\\resizebox{\\paperwidth}{!}{");
-        }
-
-        if (fitToPage) {
             sb.append("\\begin{scprooftree}{\\textwidth}");
         } else {
             sb.append("\\begin{prooftree}");
