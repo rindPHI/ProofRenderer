@@ -15,6 +15,12 @@ import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
 @RendererInformation(name = "plain", description = "Outputs the given proof cleaned-up in the same syntax")
 public class PlainRenderer implements ProofRenderer {
 
+    @Override
+    public String render(ProofTree tree, String[] args) {
+        // TODO Auto-generated method stub
+        return render(tree);
+    }
+    
     /*
      * (non-Javadoc)
      * 

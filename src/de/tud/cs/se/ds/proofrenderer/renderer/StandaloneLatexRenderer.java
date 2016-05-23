@@ -1,12 +1,48 @@
 package de.tud.cs.se.ds.proofrenderer.renderer;
 
+import java.util.Set;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
 import de.tud.cs.se.ds.proofrenderer.model.Usepackage;
 
 @RendererInformation(name = "standalone-latex", description = "Creates a standalone LaTeX document containing the specified bussproofs proof")
 public class StandaloneLatexRenderer extends LatexRenderer implements
         ProofRenderer {
+    private boolean fitToPage = false;
+    
+    @Override
+    public String render(ProofTree tree, String[] args) {
+        final Options clopt = new Options();
 
+        clopt.addOption(Option.builder("f").longOpt("fit-to-page").hasArg(false)
+                .desc("Fit proof tree to page size").required(false).build());
+
+        CommandLineParser parser = new DefaultParser();
+        try {
+            CommandLine parsed = parser.parse(clopt, args);
+            
+            if (parsed.hasOption("f")) {
+                fitToPage = true;
+            }
+        }
+        catch (ParseException e) {
+            System.err.println("Error in parsing arguments for renderer:");
+            System.err.println(e.getLocalizedMessage());
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("--renderer-args \"...\"", clopt);
+        }
+        
+        return render(tree);
+    }
+    
     @Override
     public String render(ProofTree tree) {
         final StringBuilder sb = new StringBuilder();
@@ -14,7 +50,12 @@ public class StandaloneLatexRenderer extends LatexRenderer implements
         sb.append("\\documentclass{article}\n").append(
                 "\\usepackage{bussproofs}\n");
 
-        for (Usepackage usepackage : tree.getUsePackages()) {
+        final Set<Usepackage> packages = tree.getUsePackages();
+        if (fitToPage) {
+            packages.add(new Usepackage("graphics", ""));
+        }
+        
+        for (Usepackage usepackage : packages) {
             sb.append(render(usepackage));
         }
 
@@ -24,8 +65,16 @@ public class StandaloneLatexRenderer extends LatexRenderer implements
 
         sb.append("\n\\begin{document}\n\n");
 
+        if (fitToPage) {
+            sb.append("\\resizebox{\\paperwidth}{!}{");
+        }
+        
         sb.append("\\begin{prooftree}").append(render(tree.getSubtree()))
                 .append("\n\\end{prooftree}");
+
+        if (fitToPage) {
+            sb.append("}");
+        }
 
         sb.append("\n\n\\end{document}");
 

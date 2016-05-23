@@ -1,15 +1,15 @@
 package de.tud.cs.se.ds.proofrenderer.model;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 public class ProofTree implements ProofTreeModelElement {
-    private ArrayList<Usepackage> usePackages = null;
+    private Set<Usepackage> usePackages = null;
     private HashMap<String, OperatorDefinition> opdefs = null;
     private HashMap<String, MacroDefinition> macrodefs = null;
     private SubTree subtree = null;
 
-    public ProofTree(ArrayList<Usepackage> usePackages, HashMap<String, MacroDefinition> macrodefs,
+    public ProofTree(Set<Usepackage> usePackages, HashMap<String, MacroDefinition> macrodefs,
             HashMap<String, OperatorDefinition> opdefs, SubTree subtree) {
         this.usePackages = usePackages;
         this.macrodefs = macrodefs;
@@ -17,11 +17,11 @@ public class ProofTree implements ProofTreeModelElement {
         this.subtree = subtree;
     }
 
-    public ArrayList<Usepackage> getUsePackages() {
+    public Set<Usepackage> getUsePackages() {
         return usePackages;
     }
 
-    public void setUsePackages(ArrayList<Usepackage> usePackages) {
+    public void setUsePackages(Set<Usepackage> usePackages) {
         this.usePackages = usePackages;
     }
 

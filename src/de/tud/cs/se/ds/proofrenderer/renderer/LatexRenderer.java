@@ -2,6 +2,15 @@ package de.tud.cs.se.ds.proofrenderer.renderer;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Set;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 import de.tud.cs.se.ds.proofrenderer.exception.RendererException;
 import de.tud.cs.se.ds.proofrenderer.model.MacroDefinition;
@@ -17,6 +26,7 @@ import de.tud.cs.se.ds.proofrenderer.model.Usepackage;
 public class LatexRenderer implements ProofRenderer {
 
     private ProofTree proofTree = null;
+    private boolean fitToPage = false;
 
     @Override
     public String render(ProofTree tree) {
@@ -24,10 +34,40 @@ public class LatexRenderer implements ProofRenderer {
         return render();
     }
 
+    @Override
+    public String render(ProofTree tree, String[] args) {
+        final Options clopt = new Options();
+
+        clopt.addOption(Option.builder("f").longOpt("fit-to-page").hasArg(false)
+                .desc("Fit proof tree to page size").required(false).build());
+
+        CommandLineParser parser = new DefaultParser();
+        try {
+            CommandLine parsed = parser.parse(clopt, args);
+            
+            if (parsed.hasOption("f")) {
+                fitToPage = true;
+            }
+        }
+        catch (ParseException e) {
+            System.err.println("Error in parsing arguments for renderer:");
+            System.err.println(e.getLocalizedMessage());
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("--renderer-args \"...\"", clopt);
+        }
+        
+        return render(tree);
+    }
+
     private String render() {
         final StringBuilder sb = new StringBuilder();
 
-        for (Usepackage usepackage : proofTree.getUsePackages()) {
+        final Set<Usepackage> packages = proofTree.getUsePackages();
+        if (fitToPage) {
+            packages.add(new Usepackage("graphics", ""));
+        }
+        
+        for (Usepackage usepackage : packages) {
             sb.append("% Put into preamble:\n")
                 .append("% ")
                 .append(render(usepackage));
@@ -41,9 +81,17 @@ public class LatexRenderer implements ProofRenderer {
             sb.append("\n");
         }
         
+        if (fitToPage) {
+            sb.append("\\resizebox{\\paperwidth}{!}{");
+        }
+        
         sb.append("\\begin{prooftree}").append(render(proofTree.getSubtree()))
                 .append("\n\\end{prooftree}");
 
+        if (fitToPage) {
+            sb.append("}");
+        }
+        
         return sb.toString();
     }
     

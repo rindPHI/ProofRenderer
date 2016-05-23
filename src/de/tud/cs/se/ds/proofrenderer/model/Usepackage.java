@@ -38,4 +38,15 @@ public class Usepackage implements ProofTreeModelElement {
         
         return sb.toString();
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Usepackage &&
+                ((Usepackage) obj).pkg.equals(pkg);
+    }
+    
+    @Override
+    public int hashCode() {
+        return pkg.hashCode();
+    }
 }

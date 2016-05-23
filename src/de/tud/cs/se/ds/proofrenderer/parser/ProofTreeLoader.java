@@ -2,6 +2,7 @@ package de.tud.cs.se.ds.proofrenderer.parser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import de.tud.cs.se.ds.proofrenderer.model.MacroDefinition;
 import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition;
@@ -33,7 +34,7 @@ import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.UsepkgContext;
 public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
     private HashMap<String, OperatorDefinition> opDefs = new HashMap<String, OperatorDefinition>();
     private HashMap<String, MacroDefinition> macroDefs = new HashMap<String, MacroDefinition>();
-    private ArrayList<Usepackage> usePackages = new ArrayList<Usepackage>();
+    private HashSet<Usepackage> usePackages = new HashSet<Usepackage>();
 
     @Override
     public ProofTree visitInit(InitContext ctx) {

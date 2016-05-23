@@ -40,6 +40,7 @@ public class Main {
     private File proofTreeFile = null;
     private File output = null;
     private ProofRenderer renderer = null;
+    private String[] rendererArgs = new String[0];
 
     /**
      * TODO
@@ -55,16 +56,18 @@ public class Main {
         optGroup.addOption(Option.builder("f").argName("FILE").longOpt("file")
                 .desc("The .pt  file to transform").required().hasArg()
                 .type(File.class).build());
+        optGroup.addOption(Option.builder("s").longOpt("show-renderers")
+                .hasArg(false).desc("Show available renderers").build());
+        
         clopt.addOption(Option.builder("r").argName("RENDERER")
                 .longOpt("renderer").desc("The renderer for the proof")
                 .required(false).hasArg().build());
+        clopt.addOption(Option.builder("a").longOpt("renderer-args")
+                .argName("RENDERER_ARGS").hasArg().required(false).build());
         clopt.addOption(Option.builder("o").longOpt("output").hasArg()
                 .argName("OUTPUT")
                 .desc("Desired output file or - for command line output")
                 .build());
-
-        optGroup.addOption(Option.builder("s").longOpt("show-renderers")
-                .hasArg(false).desc("Show available renderers").build());
 
         clopt.addOption(Option.builder("h").longOpt("help").hasArg(false)
                 .desc("Display this help").required(false).build());
@@ -101,6 +104,10 @@ public class Main {
                     output = new File(outputVal);
                 }
                 
+                final String rendererArgString = parsed.getOptionValue("a", "");
+                if (!rendererArgString.isEmpty()) {
+                    rendererArgs = rendererArgString.split(",");
+                }
             }
         }
         catch (ParseException e1) {
@@ -144,7 +151,7 @@ public class Main {
     public String render() throws FileNotFoundException, IOException {
         ProofTree parseResult = parse();
 
-        return renderer.render(parseResult);
+        return renderer.render(parseResult, rendererArgs);
     }
 
     public ProofTree parse() throws IOException, FileNotFoundException {
