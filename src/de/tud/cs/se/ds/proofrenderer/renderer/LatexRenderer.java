@@ -11,7 +11,7 @@ import de.tud.cs.se.ds.proofrenderer.model.ProofNodeStringExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
 import de.tud.cs.se.ds.proofrenderer.model.SubTree;
 
-@RendererInformation(name = "latex")
+@RendererInformation(name = "latex", description = "Creates a bussproofs LaTeX proof for including in a container document")
 public class LatexRenderer implements ProofRenderer {
 
     private ProofTree proofTree = null;

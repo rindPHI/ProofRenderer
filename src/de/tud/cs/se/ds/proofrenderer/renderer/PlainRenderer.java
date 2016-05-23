@@ -12,7 +12,7 @@ import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
  *
  * @author Dominic Scheurer
  */
-@RendererInformation(name = "plain")
+@RendererInformation(name = "plain", description = "Outputs the given proof cleaned-up in the same syntax")
 public class PlainRenderer implements ProofRenderer {
 
     /*

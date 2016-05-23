@@ -11,4 +11,6 @@ public @interface RendererInformation {
 
     String name();
     
+    String description() default "";
+    
 }

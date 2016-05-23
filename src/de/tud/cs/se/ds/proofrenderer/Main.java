@@ -18,6 +18,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.reflections.Reflections;
@@ -48,48 +49,66 @@ public class Main {
     public Main(String[] args) {
         // Command line arguments handling
         final Options clopt = new Options();
-        clopt.addOption(Option.builder("f").argName("FILE").longOpt("file")
+        final OptionGroup optGroup = new OptionGroup();
+        optGroup.setRequired(true);
+
+        optGroup.addOption(Option.builder("f").argName("FILE").longOpt("file")
                 .desc("The .pt  file to transform").required().hasArg()
                 .type(File.class).build());
         clopt.addOption(Option.builder("r").argName("RENDERER")
-                .longOpt("renderer")
-                .desc("The renderer for the proof [*latex* | plain]")
+                .longOpt("renderer").desc("The renderer for the proof")
                 .required(false).hasArg().build());
-        clopt.addOption(Option.builder("h").longOpt("help").hasArg(false)
-                .desc("Display this help").required(false).build());
         clopt.addOption(Option.builder("o").longOpt("output").hasArg()
+                .argName("OUTPUT")
                 .desc("Desired output file or - for command line output")
                 .build());
+
+        optGroup.addOption(Option.builder("s").longOpt("show-renderers")
+                .hasArg(false).desc("Show available renderers").build());
+
+        clopt.addOption(Option.builder("h").longOpt("help").hasArg(false)
+                .desc("Display this help").required(false).build());
+
+        clopt.addOptionGroup(optGroup);
 
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine parsed = parser.parse(clopt, args);
 
-            String fileName = parsed.getOptionValue("f");
-            proofTreeFile = new File(fileName);
-            if (!proofTreeFile.exists()) {
-                throw new ParseException("The given file does not exist.");
-            }
-
-            final String rendererVal = parsed.getOptionValue('r', "latex");
-
-            renderer = getAvailableRenderers().get(rendererVal);
+            if (parsed.hasOption("s")) {
+                System.out.println(getRendererInformation());
+                System.exit(0);
+            } else {
             
-            if (renderer == null) {
-                throw new ParseException("Unknown renderer: '" + rendererVal
-                        + "'");
-            }
-
-            final String outputVal = parsed.getOptionValue('o', "-");
-
-            if (!outputVal.equals("-")) {
-                output = new File(outputVal);
+                String fileName = parsed.getOptionValue("f");
+                proofTreeFile = new File(fileName);
+                if (!proofTreeFile.exists()) {
+                    throw new ParseException("The given file does not exist.");
+                }
+    
+                final String rendererVal = parsed.getOptionValue('r', "latex");
+    
+                renderer = getAvailableRenderers().get(rendererVal);
+    
+                if (renderer == null) {
+                    throw new ParseException("Unknown renderer: '" + rendererVal
+                            + "'");
+                }
+    
+                final String outputVal = parsed.getOptionValue('o', "-");
+    
+                if (!outputVal.equals("-")) {
+                    output = new File(outputVal);
+                }
+                
             }
         }
         catch (ParseException e1) {
             System.err.println(e1.getMessage());
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("java -jar ProofRenderer.jar", clopt);
+            System.out.println();
+            System.out.println(getRendererInformation());
             System.exit(1);
         }
         // END Command line arguments handlingSystem.exit(1);
@@ -149,6 +168,29 @@ public class Main {
         else {
             Files.write(output.toPath(), str.getBytes());
         }
+    }
+    
+    private String getRendererInformation() {
+        final StringBuilder sb = new StringBuilder();
+        
+        final HashMap<String, ProofRenderer> renderers = getAvailableRenderers();
+        
+        sb.append("Available renderers:\n\n");
+        for (String renderer : renderers.keySet()) {
+            sb.append(renderer);
+            
+            final RendererInformation annotation = renderers.get(renderer).getClass()
+                    .getAnnotation(RendererInformation.class);
+            
+            if (!annotation.description().isEmpty()) {
+                sb.append(":\n");
+                sb.append("\t" + annotation.description());
+            }
+            
+            sb.append("\n");
+        }
+        
+        return sb.toString();
     }
 
     private HashMap<String, ProofRenderer> getAvailableRenderers() {
