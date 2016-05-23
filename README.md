@@ -132,3 +132,42 @@ oppos :	'infix' | 'prefix' | 'suffix' | 'param';
 ```
 
 `opid` is the name of the operator, e.g. `lor` as in the examples above, `opdef` is the LaTeX definition, e.g. `" \lor "`, `opprec` is the (positive) precedence of the operator, where low numbers bind weaker than higher numbers, and `oppos` is the operator position. For infix, prefix, and suffix operators, an arbitrary number of arguments can be supplied. Parentheses will be put according to the given precedence. The `param` option allows for the definition of operators with LaTeX-like parameters; here, the number of parameters has to match, of course.
+
+Inside a proof, you can simple start a new subtree by enclosing a sequence of nodes (and subtrees) into parentheses.
+
+## Supported Renderers
+
+So far, the following three renderers are supported (supply the name inside the quotes to the `-r` command line parameter):
+
+* "plain"  
+  This renderer just generates a cleaned-up representation of the input in the same lisp-like syntax.
+* "latex"  
+  bussproof proof tree for including into an existing LaTeX document.
+* "standalone-latex"  
+  A complete LaTeX document ready for compilation.
+  
+## Extending ProofRenderer
+
+It's quite easy to extend ProofRenderer with a new renderer. Just create a class implementing `de.tud.cs.se.ds.proofrenderer.renderer.ProofRenderer` providing an annotation according to `de.tud.cs.se.ds.proofrenderer.renderer.RendererInformation`. An easy example is the "standalone-latex" renderer:
+
+```java
+@RendererInformation(name = "standalone-latex")
+public class StandaloneLatexRenderer implements ProofRenderer {
+
+    @Override
+    public String render(ProofTree tree) {
+        final StringBuilder sb = new StringBuilder();
+        
+        sb.append("\\documentclass{article}\n")
+            .append("\\usepackage{bussproofs}\n\n")
+            .append("\\begin{document}\n\n");
+        
+        sb.append(new LatexRenderer().render(tree));
+        
+        sb.append("\n\n\\end{document}");
+        
+        return sb.toString();
+    }
+
+}
+```

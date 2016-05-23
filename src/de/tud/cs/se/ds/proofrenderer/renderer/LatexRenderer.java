@@ -11,6 +11,7 @@ import de.tud.cs.se.ds.proofrenderer.model.ProofNodeStringExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
 import de.tud.cs.se.ds.proofrenderer.model.SubTree;
 
+@RendererInformation(name = "latex")
 public class LatexRenderer implements ProofRenderer {
 
     private ProofTree proofTree = null;

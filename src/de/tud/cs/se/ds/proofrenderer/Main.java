@@ -8,6 +8,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -18,14 +20,14 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.reflections.Reflections;
 
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofLexer;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofTreeLoader;
-import de.tud.cs.se.ds.proofrenderer.renderer.LatexRenderer;
-import de.tud.cs.se.ds.proofrenderer.renderer.PlainRenderer;
 import de.tud.cs.se.ds.proofrenderer.renderer.ProofRenderer;
+import de.tud.cs.se.ds.proofrenderer.renderer.RendererInformation;
 
 /**
  * TODO
@@ -71,13 +73,9 @@ public class Main {
 
             final String rendererVal = parsed.getOptionValue('r', "latex");
 
-            if (rendererVal.equals("latex")) {
-                renderer = new LatexRenderer();
-            }
-            else if (rendererVal.equals("plain")) {
-                renderer = new PlainRenderer();
-            }
-            else {
+            renderer = getAvailableRenderers().get(rendererVal);
+            
+            if (renderer == null) {
                 throw new ParseException("Unknown renderer: '" + rendererVal
                         + "'");
             }
@@ -143,12 +141,42 @@ public class Main {
 
         return parseResult;
     }
-    
+
     private void output(String str) throws IOException {
         if (output == null) {
             System.out.println(str);
-        } else {
+        }
+        else {
             Files.write(output.toPath(), str.getBytes());
         }
+    }
+
+    private HashMap<String, ProofRenderer> getAvailableRenderers() {
+        final HashMap<String, ProofRenderer> result = new HashMap<String, ProofRenderer>();
+
+        final Reflections reflections = new Reflections(
+                "de.tud.cs.se.ds.proofrenderer.renderer");
+        final Set<Class<?>> renderers = reflections
+                .getTypesAnnotatedWith(RendererInformation.class);
+
+        for (Class<?> rendererClass : renderers) {
+            try {
+                final Object renderer = rendererClass.newInstance();
+
+                assert renderer instanceof ProofRenderer;
+
+                final RendererInformation annotation = rendererClass
+                        .getAnnotation(RendererInformation.class);
+
+                result.put(annotation.name(), (ProofRenderer) renderer);
+            }
+            catch (InstantiationException | IllegalAccessException e) {
+                System.err
+                        .println("Problem with accessing class declared as renderer: '"
+                                + rendererClass.getCanonicalName() + "'");
+            }
+        }
+
+        return result;
     }
 }

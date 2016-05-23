@@ -12,6 +12,7 @@ import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
  *
  * @author Dominic Scheurer
  */
+@RendererInformation(name = "plain")
 public class PlainRenderer implements ProofRenderer {
 
     /*

@@ -17,6 +17,7 @@
 		<pathelement location="bin" />
 		<pathelement location="${lib.dir}/antlr-4.5.3-complete.jar" />
 		<pathelement location="${lib.dir}/commons-cli-1.3.1.jar" />
+		<pathelement location="${lib.dir}/reflections-0.9.11.jar" />
 	</path>
 
 	<target name="init">
@@ -63,6 +64,7 @@
 		<path id="jar.classpath">
 			<pathelement location="${lib.dir}/antlr-4.5.3-complete.jar" />
 			<pathelement location="${lib.dir}/commons-cli-1.3.1.jar" />
+			<pathelement location="${lib.dir}/reflections-0.9.11.jar" />
 		</path>
 
 		<manifestclasspath property="manifest.classpath" jarfile="${jar.file}">
