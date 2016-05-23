@@ -9,8 +9,9 @@ import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition.OperatorPositions;
 import de.tud.cs.se.ds.proofrenderer.model.ProofNodeExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofNodeStringExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
-import de.tud.cs.se.ds.proofrenderer.model.SubTree;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTreeModelElement;
+import de.tud.cs.se.ds.proofrenderer.model.SubTree;
+import de.tud.cs.se.ds.proofrenderer.model.Usepackage;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.DefopContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.InitContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.MacroContext;
@@ -23,26 +24,57 @@ import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.OperatorLabelContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.OpidContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.OpposContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.OpprecContext;
+import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.PkgargsContext;
+import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.PkgnameContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.ProofContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.SubtreeContext;
+import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.UsepkgContext;
 
 public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
     private HashMap<String, OperatorDefinition> opDefs = new HashMap<String, OperatorDefinition>();
     private HashMap<String, MacroDefinition> macroDefs = new HashMap<String, MacroDefinition>();
+    private ArrayList<Usepackage> usePackages = new ArrayList<Usepackage>();
 
     @Override
     public ProofTree visitInit(InitContext ctx) {
+        for (UsepkgContext usepkg : ctx.usepkg()) {
+            visit(usepkg);
+        }
+        
         for (MacroContext defmacro : ctx.macro()) {
             visit(defmacro);
         }
-        
+
         for (DefopContext defop : ctx.defop()) {
             visit(defop);
         }
 
         final SubTree subtree = visitProof(ctx.proof());
 
-        return new ProofTree(macroDefs, opDefs, subtree);
+        return new ProofTree(usePackages, macroDefs, opDefs, subtree);
+    }
+
+    @Override
+    public ProofTreeModelElementWrapper<Usepackage> visitUsepkg(
+            UsepkgContext ctx) {
+        final Usepackage result = new Usepackage(visitPkgname(ctx.pkgname())
+                .getElem(), visitPkgargs(ctx.pkgargs()).getElem());
+        usePackages.add(result);
+        return new ProofTreeModelElementWrapper<Usepackage>(result);
+    }
+
+    @Override
+    public ProofTreeModelElementWrapper<String> visitPkgname(PkgnameContext ctx) {
+        return new ProofTreeModelElementWrapper<String>(stripQuotes(ctx
+                .STRING().getText()));
+    }
+
+    @Override
+    public ProofTreeModelElementWrapper<String> visitPkgargs(PkgargsContext ctx) {
+        final String result = ctx == null ? "" : stripQuotes(ctx
+                .STRING().getText());
+        
+        return new ProofTreeModelElementWrapper<String>(result);
     }
 
     @Override
@@ -54,26 +86,28 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
         }
 
         final MacroDefinition opdef = new MacroDefinition(opName,
-                visitNumparams(ctx.numparams()).getElem(),
-                visitMacrodef(ctx.macrodef()).getElem());
+                visitNumparams(ctx.numparams()).getElem(), visitMacrodef(
+                        ctx.macrodef()).getElem());
 
         macroDefs.put(opName, opdef);
 
         return opdef;
     }
-    
+
     @Override
-    public ProofTreeModelElementWrapper<String> visitMacrodef(MacrodefContext ctx) {
+    public ProofTreeModelElementWrapper<String> visitMacrodef(
+            MacrodefContext ctx) {
         return new ProofTreeModelElementWrapper<String>(stripQuotes(ctx
                 .STRING().getText()));
     }
-    
+
     @Override
-    public ProofTreeModelElementWrapper<Integer> visitNumparams(NumparamsContext ctx) {
+    public ProofTreeModelElementWrapper<Integer> visitNumparams(
+            NumparamsContext ctx) {
         return new ProofTreeModelElementWrapper<Integer>(Integer.parseInt(ctx
                 .getText()));
     }
-    
+
     @Override
     public ProofTreeModelElementWrapper<String> visitMacroid(MacroidContext ctx) {
         return new ProofTreeModelElementWrapper<String>(ctx.getText());

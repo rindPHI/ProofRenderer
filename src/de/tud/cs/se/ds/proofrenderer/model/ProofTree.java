@@ -1,17 +1,28 @@
 package de.tud.cs.se.ds.proofrenderer.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ProofTree implements ProofTreeModelElement {
+    private ArrayList<Usepackage> usePackages = null;
     private HashMap<String, OperatorDefinition> opdefs = null;
     private HashMap<String, MacroDefinition> macrodefs = null;
     private SubTree subtree = null;
 
-    public ProofTree(HashMap<String, MacroDefinition> macrodefs,
+    public ProofTree(ArrayList<Usepackage> usePackages, HashMap<String, MacroDefinition> macrodefs,
             HashMap<String, OperatorDefinition> opdefs, SubTree subtree) {
+        this.usePackages = usePackages;
         this.macrodefs = macrodefs;
         this.opdefs = opdefs;
         this.subtree = subtree;
+    }
+
+    public ArrayList<Usepackage> getUsePackages() {
+        return usePackages;
+    }
+
+    public void setUsePackages(ArrayList<Usepackage> usePackages) {
+        this.usePackages = usePackages;
     }
 
     public HashMap<String, MacroDefinition> getMacrodefs() {
@@ -50,6 +61,10 @@ public class ProofTree implements ProofTreeModelElement {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
+
+        for (Usepackage usepkg : usePackages) {
+            sb.append(usepkg.toString()).append("\n");
+        }
 
         for (String macrodef : macrodefs.keySet()) {
             sb.append(getMacrodef(macrodef).toString()).append("\n");

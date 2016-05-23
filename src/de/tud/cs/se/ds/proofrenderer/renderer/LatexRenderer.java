@@ -11,6 +11,7 @@ import de.tud.cs.se.ds.proofrenderer.model.ProofNodeExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofNodeStringExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
 import de.tud.cs.se.ds.proofrenderer.model.SubTree;
+import de.tud.cs.se.ds.proofrenderer.model.Usepackage;
 
 @RendererInformation(name = "latex", description = "Creates a bussproofs LaTeX proof for including in a container document")
 public class LatexRenderer implements ProofRenderer {
@@ -26,8 +27,17 @@ public class LatexRenderer implements ProofRenderer {
     private String render() {
         final StringBuilder sb = new StringBuilder();
 
+        for (Usepackage usepackage : proofTree.getUsePackages()) {
+            sb.append("% Put into preamble:\n");
+            sb.append(render(usepackage));
+        }
+
         for (String macro : proofTree.getMacrodefs().keySet()) {
             sb.append(render(proofTree.getMacrodef(macro)));
+        }
+        
+        if (proofTree.getUsePackages().size() > 0 || proofTree.getMacrodefs().size() > 0) {
+            sb.append("\n");
         }
         
         sb.append("\\begin{prooftree}").append(render(proofTree.getSubtree()))
@@ -36,7 +46,7 @@ public class LatexRenderer implements ProofRenderer {
         return sb.toString();
     }
     
-    private String render(MacroDefinition macro) {
+    protected String render(MacroDefinition macro) {
         final StringBuilder sb = new StringBuilder();
         
         sb.append("\\newcommand{\\")
@@ -49,8 +59,20 @@ public class LatexRenderer implements ProofRenderer {
         
         return sb.toString();
     }
+    
+    protected String render(Usepackage usepkg) {
+        final StringBuilder sb = new StringBuilder();
+        
+        sb.append("\\usepackage[")
+            .append(usepkg.getArgs())
+            .append("]{")
+            .append(usepkg.getPkgName())
+            .append("}\n");
+        
+        return sb.toString();
+    }
 
-    private String render(SubTree tree) {
+    protected String render(SubTree tree) {
         final StringBuilder sb = new StringBuilder();
 
         final ArrayList<ProofNodeExpression> reversedSeqBlock = tree

@@ -28,3 +28,4 @@
     )
 )
 (defop seq "\implies  " 0)
+(usepackage "amsmath")

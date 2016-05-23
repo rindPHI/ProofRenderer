@@ -1,7 +1,18 @@
 grammar Proof;
 
 init
-	:	(defop | macro) * proof (defop | macro) *;
+	:	(defop | macro | usepkg) * proof (defop | macro | usepkg) *;
+
+usepkg
+	:	LPAREN 'usepackage' pkgname pkgargs ? RPAREN
+	;
+	
+pkgname
+	:	STRING
+	;
+pkgargs
+	:	STRING
+	;
 
 macro
 	:	LPAREN 'macro' macroid numparams macrodef RPAREN;
