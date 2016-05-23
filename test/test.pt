@@ -3,6 +3,7 @@
 (defop land " \land " 30)
 (defop neg "\neg " 40 prefix)
 (defop list ", " 10)
+(macro implies 0 "\Longrightarrow")
 (defop modality "\left[#1\right]#2" 40 param)
 (defop text "\textrm{#1}" 99999 param)
 (proof
@@ -26,4 +27,4 @@
         (text "And a third branch!!!")
     )
 )
-(defop seq "\Rightarrow " 0)
+(defop seq "\implies  " 0)

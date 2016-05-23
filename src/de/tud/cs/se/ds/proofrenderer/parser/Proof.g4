@@ -1,7 +1,19 @@
 grammar Proof;
 
 init
-	:	defop * proof defop *;
+	:	(defop | macro) * proof (defop | macro) *;
+
+macro
+	:	LPAREN 'macro' macroid numparams macrodef RPAREN;
+macroid
+	:	ID
+	;
+numparams
+	:	INT
+	;
+macrodef
+	:	STRING
+	;
 
 defop
 	:	LPAREN 'defop' opid opdef opprec oppos ? RPAREN;

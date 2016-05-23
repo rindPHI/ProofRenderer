@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import de.tud.cs.se.ds.proofrenderer.exception.RendererException;
+import de.tud.cs.se.ds.proofrenderer.model.MacroDefinition;
 import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition;
 import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition.OperatorPositions;
 import de.tud.cs.se.ds.proofrenderer.model.ProofNodeExpression;
@@ -25,9 +26,27 @@ public class LatexRenderer implements ProofRenderer {
     private String render() {
         final StringBuilder sb = new StringBuilder();
 
+        for (String macro : proofTree.getMacrodefs().keySet()) {
+            sb.append(render(proofTree.getMacrodef(macro)));
+        }
+        
         sb.append("\\begin{prooftree}").append(render(proofTree.getSubtree()))
                 .append("\n\\end{prooftree}");
 
+        return sb.toString();
+    }
+    
+    private String render(MacroDefinition macro) {
+        final StringBuilder sb = new StringBuilder();
+        
+        sb.append("\\newcommand{\\")
+            .append(macro.getName())
+            .append("}[")
+            .append(macro.getNumParams())
+            .append("]{")
+            .append(macro.getStrDef())
+            .append("}\n");
+        
         return sb.toString();
     }
 

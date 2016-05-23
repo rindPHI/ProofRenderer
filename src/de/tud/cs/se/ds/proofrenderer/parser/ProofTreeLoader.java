@@ -3,6 +3,7 @@ package de.tud.cs.se.ds.proofrenderer.parser;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import de.tud.cs.se.ds.proofrenderer.model.MacroDefinition;
 import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition;
 import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition.OperatorPositions;
 import de.tud.cs.se.ds.proofrenderer.model.ProofNodeExpression;
@@ -12,6 +13,10 @@ import de.tud.cs.se.ds.proofrenderer.model.SubTree;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTreeModelElement;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.DefopContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.InitContext;
+import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.MacroContext;
+import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.MacrodefContext;
+import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.MacroidContext;
+import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.NumparamsContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.OpdefContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.OperatorContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.OperatorLabelContext;
@@ -23,16 +28,55 @@ import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.SubtreeContext;
 
 public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> {
     private HashMap<String, OperatorDefinition> opDefs = new HashMap<String, OperatorDefinition>();
+    private HashMap<String, MacroDefinition> macroDefs = new HashMap<String, MacroDefinition>();
 
     @Override
     public ProofTree visitInit(InitContext ctx) {
+        for (MacroContext defmacro : ctx.macro()) {
+            visit(defmacro);
+        }
+        
         for (DefopContext defop : ctx.defop()) {
             visit(defop);
         }
 
         final SubTree subtree = visitProof(ctx.proof());
 
-        return new ProofTree(opDefs, subtree);
+        return new ProofTree(macroDefs, opDefs, subtree);
+    }
+
+    @Override
+    public ProofTreeModelElement visitMacro(MacroContext ctx) {
+        final String opName = visitMacroid(ctx.macroid()).getElem();
+        if (opDefs.containsKey(opName)) {
+            System.err.println("Duplicate definition of operator '" + opName
+                    + "'");
+        }
+
+        final MacroDefinition opdef = new MacroDefinition(opName,
+                visitNumparams(ctx.numparams()).getElem(),
+                visitMacrodef(ctx.macrodef()).getElem());
+
+        macroDefs.put(opName, opdef);
+
+        return opdef;
+    }
+    
+    @Override
+    public ProofTreeModelElementWrapper<String> visitMacrodef(MacrodefContext ctx) {
+        return new ProofTreeModelElementWrapper<String>(stripQuotes(ctx
+                .STRING().getText()));
+    }
+    
+    @Override
+    public ProofTreeModelElementWrapper<Integer> visitNumparams(NumparamsContext ctx) {
+        return new ProofTreeModelElementWrapper<Integer>(Integer.parseInt(ctx
+                .getText()));
+    }
+    
+    @Override
+    public ProofTreeModelElementWrapper<String> visitMacroid(MacroidContext ctx) {
+        return new ProofTreeModelElementWrapper<String>(ctx.getText());
     }
 
     @Override
