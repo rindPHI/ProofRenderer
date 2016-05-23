@@ -51,9 +51,14 @@ Consider the following input file content of the file `test/test.pt` (which is b
 (defop seq "\Rightarrow " 0)
 ```
 
-The command `java -jar dist/ProofRenderer.jar -f test/test.pt` renders this to
+The command `java -jar dist/ProofRenderer.jar -f test/test.pt -r standalone-latex` renders this to
 
 ```latex
+\documentclass{article}
+\usepackage{bussproofs}
+
+\begin{document}
+
 \begin{prooftree}
 \AxiomC{$\neg p$}
 \UnaryInfC{$p \lor \neg q\Rightarrow succedent$}
@@ -73,11 +78,11 @@ The command `java -jar dist/ProofRenderer.jar -f test/test.pt` renders this to
 \UnaryInfC{$\Rightarrow \left[p\right]\phi$}
 \UnaryInfC{$asdf \lor asdf \lor \neg asdf$}
 \end{prooftree}
+
+\end{document}
 ```
 
-(Note that you have to `\usepackage{bussproofs}` in your document to compile this; also, don't put the prooftree environment into a math environment.)
-
-PDFLaTeX output of this tex snippet included in a container document:
+PDFLaTeX compilation result:
 
 ![Rendered Output](example-tree.png?raw=true)
 
@@ -142,7 +147,7 @@ So far, the following three renderers are supported (supply the name inside the 
 * "plain"  
   This renderer just generates a cleaned-up representation of the input in the same lisp-like syntax.
 * "latex"  
-  bussproof proof tree for including into an existing LaTeX document.
+  bussproofs proof tree for including into an existing LaTeX document.
 * "standalone-latex"  
   A complete LaTeX document ready for compilation.
   
