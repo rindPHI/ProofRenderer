@@ -76,6 +76,10 @@ The command `java -jar dist/ProofRenderer.jar -f test/test.pt` renders this to
 
 (Note that you have to `\usepackage{bussproofs}` in your document to compile this; also, don't put the prooftree environment into a math environment.)
 
+PDFLaTeX output of this tex snippet included in a container document:
+
+![Rendered Output](example-tree.png?raw=true)
+
 Using the command `java -jar dist/ProofRenderer.jar -f test/test.pt -r plain` you can clean up the messy proof tree definition in the file `test.pt`:
 
 ```lisp
