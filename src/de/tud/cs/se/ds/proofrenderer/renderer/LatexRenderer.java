@@ -28,8 +28,9 @@ public class LatexRenderer implements ProofRenderer {
         final StringBuilder sb = new StringBuilder();
 
         for (Usepackage usepackage : proofTree.getUsePackages()) {
-            sb.append("% Put into preamble:\n");
-            sb.append(render(usepackage));
+            sb.append("% Put into preamble:\n")
+                .append("% ")
+                .append(render(usepackage));
         }
 
         for (String macro : proofTree.getMacrodefs().keySet()) {
