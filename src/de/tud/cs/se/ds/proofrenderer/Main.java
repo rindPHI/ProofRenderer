@@ -92,7 +92,7 @@ public class Main {
     
                 if (renderer == null) {
                     throw new ParseException("Unknown renderer: '" + rendererVal
-                            + "'");
+                            + "'\n\n" + getRendererInformation());
                 }
     
                 final String outputVal = parsed.getOptionValue('o', "-");
@@ -107,8 +107,6 @@ public class Main {
             System.err.println(e1.getMessage());
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("java -jar ProofRenderer.jar", clopt);
-            System.out.println();
-            System.out.println(getRendererInformation());
             System.exit(1);
         }
         // END Command line arguments handlingSystem.exit(1);
