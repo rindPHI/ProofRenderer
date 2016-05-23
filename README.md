@@ -1,4 +1,5 @@
-# ProofParser
+# ProofRenderer
+
 Transforms proof trees written in a Lisp-like syntax to bussproof LaTeX trees.
 
 Try it with:
