@@ -67,9 +67,9 @@ public class LatexRenderer implements ProofRenderer {
             packages.add(new Usepackage("graphics", ""));
             
             sb.append("%%% Put into preamble:\n");
-            sb.append("% \\newenvironment{scprooftree}[1]%\n")
-                    .append("%\t{\\gdef\\scalefactor{#1}\\begin{center}\\proofSkipAmount \\leavevmode}%\n")
-                    .append("%\t{\\resizebox{\\scalefactor}{!}{\\DisplayProof}\\proofSkipAmount \\end{center} }\n");
+            sb.append("% \\newenvironment{scprooftree}[2]%\n")
+                    .append("%\t{\\gdef\\scalefactor{#1}\\gdef\\scalefactorv{#2}\\begin{center}\\proofSkipAmount \\leavevmode}%\n")
+                    .append("%\t{\\resizebox{\\scalefactor}{\\scalefactorv}{\\DisplayProof}\\proofSkipAmount \\end{center} }\n");
         }
         
         for (Usepackage usepackage : packages) {
@@ -87,7 +87,7 @@ public class LatexRenderer implements ProofRenderer {
         }
 
         if (fitToPage) {
-            sb.append("\\begin{scprooftree}{\\textwidth}");
+            sb.append("\\begin{scprooftree}{\\textwidth}{\\textheight}");
         } else {
             sb.append("\\begin{prooftree}");
         }
