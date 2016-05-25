@@ -179,3 +179,12 @@ public class StandaloneLatexRenderer implements ProofRenderer {
 
 }
 ```
+
+## Convenience Script for Rendering and Compiling
+
+The following script for the [fish shell](http://fishshell.com) expects a name of the file to compile excluding the extension. Make sure that a proof file with this name and the extension ".pt" exists in the current directory. The script uses ProofRenderer to produce a standalone LaTeX file and compiles it afterward. The `--fit-to-page` renderer option resizes the tree such that it fits into the current page in the horizontal direction.
+
+```fish
+#! /usr/bin/fish
+java -jar ProofRenderer.jar -f $argv[1].pt -r standalone-latex -o $argv[1].tex -a "--fit-to-page" ; and pdflatex -interaction=batchmode $argv[1].tex
+```
