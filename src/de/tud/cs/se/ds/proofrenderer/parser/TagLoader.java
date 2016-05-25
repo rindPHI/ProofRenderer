@@ -1,19 +1,17 @@
 package de.tud.cs.se.ds.proofrenderer.parser;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
-import de.tud.cs.se.ds.proofrenderer.model.MacroDefinition;
 import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition;
 import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition.OperatorPositions;
-import de.tud.cs.se.ds.proofrenderer.model.ProofNodeExpression;
-import de.tud.cs.se.ds.proofrenderer.model.ProofNodeStringExpression;
-import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTreeModelElement;
-import de.tud.cs.se.ds.proofrenderer.model.SubTree;
-import de.tud.cs.se.ds.proofrenderer.model.Usepackage;
+import de.tud.cs.se.ds.proofrenderer.model.ProofTreeTag;
+import de.tud.cs.se.ds.proofrenderer.model.ProofTreeTags;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.DefopContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.InitContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.MacroContext;
@@ -31,38 +29,63 @@ import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.PkgnameContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.ProofContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.SubtreeContext;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser.UsepkgContext;
+import de.tud.cs.se.ds.proofrenderer.parser.ProofTreeLoader.ProofTreeModelElementWrapper;
 
-public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> implements IProofTreeLoader {
+public class TagLoader extends ProofBaseVisitor<ProofTreeModelElement>
+        implements IProofTreeLoader {
     private HashMap<String, OperatorDefinition> opDefs = new HashMap<String, OperatorDefinition>();
-    private HashMap<String, MacroDefinition> macroDefs = new HashMap<String, MacroDefinition>();
-    private HashSet<Usepackage> usePackages = new HashSet<Usepackage>();
+    private File inputFile = null;
+    private ArrayList<String> fileLines = new ArrayList<String>();
 
     @Override
-    public ProofTree visitInit(InitContext ctx) {
-        for (UsepkgContext usepkg : ctx.usepkg()) {
-            visit(usepkg);
-        }
-        
-        for (MacroContext defmacro : ctx.macro()) {
-            visit(defmacro);
-        }
+    public void setInputFile(File file) {
+        this.inputFile = file;
 
-        for (DefopContext defop : ctx.defop()) {
-            visit(defop);
+        try {
+            final BufferedReader br = new BufferedReader(new FileReader(file));
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                fileLines.add(line);
+            }
+
+            br.close();
         }
-
-        final SubTree subtree = visitProof(ctx.proof());
-
-        return new ProofTree(usePackages, macroDefs, opDefs, subtree);
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
-    public ProofTreeModelElementWrapper<Usepackage> visitUsepkg(
-            UsepkgContext ctx) {
-        final Usepackage result = new Usepackage(visitPkgname(ctx.pkgname())
-                .getElem(), visitPkgargs(ctx.pkgargs()).getElem());
-        usePackages.add(result);
-        return new ProofTreeModelElementWrapper<Usepackage>(result);
+    public ProofTreeTags visitInit(InitContext ctx) {
+        final ArrayList<ProofTreeTag> tags = new ArrayList<ProofTreeTag>();
+
+        for (UsepkgContext usepkg : ctx.usepkg()) {
+            tags.add(visitUsepkg(usepkg));
+        }
+
+        for (MacroContext defmacro : ctx.macro()) {
+            tags.add(visitMacro(defmacro));
+        }
+
+        for (DefopContext defop : ctx.defop()) {
+            tags.add(visitDefop(defop));
+        }
+
+        tags.addAll(visitProof(ctx.proof()).getTags());
+
+        return new ProofTreeTags(tags);
+    }
+
+    @Override
+    public ProofTreeTag visitUsepkg(UsepkgContext ctx) {
+        final String pkgName = visitPkgname(ctx.pkgname()).getElem();
+        final String pkgArgs = visitPkgargs(ctx.pkgargs()).getElem();
+        final int line = ctx.getStart().getLine();
+
+        return new ProofTreeTag(pkgName + " [" + pkgArgs + "]",
+                inputFile.getName(), fileLines.get(line - 1), 'u', line,
+                new ArrayList<String>());
     }
 
     @Override
@@ -73,27 +96,19 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> imp
 
     @Override
     public ProofTreeModelElementWrapper<String> visitPkgargs(PkgargsContext ctx) {
-        final String result = ctx == null ? "" : stripQuotes(ctx
-                .STRING().getText());
-        
+        final String result = ctx == null ? "" : stripQuotes(ctx.STRING()
+                .getText());
+
         return new ProofTreeModelElementWrapper<String>(result);
     }
 
     @Override
-    public ProofTreeModelElement visitMacro(MacroContext ctx) {
+    public ProofTreeTag visitMacro(MacroContext ctx) {
         final String opName = visitMacroid(ctx.macroid()).getElem();
-        if (opDefs.containsKey(opName)) {
-            System.err.println("Duplicate definition of operator '" + opName
-                    + "'");
-        }
+        final int line = ctx.getStart().getLine();
 
-        final MacroDefinition opdef = new MacroDefinition(opName,
-                visitNumparams(ctx.numparams()).getElem(), visitMacrodef(
-                        ctx.macrodef()).getElem());
-
-        macroDefs.put(opName, opdef);
-
-        return opdef;
+        return new ProofTreeTag(opName, inputFile.getName(),
+                fileLines.get(line - 1), 'm', line, new ArrayList<String>());
     }
 
     @Override
@@ -116,20 +131,17 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> imp
     }
 
     @Override
-    public OperatorDefinition visitDefop(DefopContext ctx) {
+    public ProofTreeTag visitDefop(DefopContext ctx) {
         final String opName = visitOpid(ctx.opid()).getElem();
-        if (opDefs.containsKey(opName)) {
-            System.err.println("Duplicate definition of operator '" + opName
-                    + "'");
-        }
+        final int line = ctx.getStart().getLine();
 
-        final OperatorDefinition opdef = new OperatorDefinition(opName,
-                visitOpdef(ctx.opdef()).getElem(), visitOpprec(ctx.opprec())
-                        .getElem(), visitOppos(ctx.oppos()).getElem());
+        opDefs.put(opName,
+                new OperatorDefinition(opName, visitOpdef(ctx.opdef())
+                        .getElem(), visitOpprec(ctx.opprec()).getElem(),
+                        visitOppos(ctx.oppos()).getElem()));
 
-        opDefs.put(opName, opdef);
-
-        return opdef;
+        return new ProofTreeTag(opName, inputFile.getName(),
+                fileLines.get(line - 1), 'o', line, new ArrayList<String>());
     }
 
     @Override
@@ -158,44 +170,69 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> imp
     }
 
     @Override
-    public SubTree visitProof(ProofContext ctx) {
+    public ProofTreeTags visitProof(ProofContext ctx) {
         return visitSubtree(ctx.subtree());
     }
 
-    @Override
-    public SubTree visitSubtree(SubtreeContext ctx) {
-        final ArrayList<ProofNodeExpression> sequentialBlock = new ArrayList<ProofNodeExpression>();
-        final ArrayList<SubTree> subtrees = new ArrayList<SubTree>();
+    private ProofTreeTags visitSubtree(SubtreeContext ctx,
+            ArrayList<String> currentScope) {
+        final ArrayList<ProofTreeTag> tags = new ArrayList<ProofTreeTag>();
 
+        String lastOpName = "";
         for (OperatorContext operator : ctx.operator()) {
-            sequentialBlock.add(visitOperator(operator).getElem());
+            final ProofTreeTag tag = visitOperator(operator);
+
+            tag.setScope(new ArrayList<String>(currentScope));
+            lastOpName = tag.getName();
+
+            tags.add(tag);
         }
 
-        for (SubtreeContext operator : ctx.subtree()) {
-            subtrees.add(visitSubtree(operator));
+        int i = 1;
+        for (SubtreeContext subtree : ctx.subtree()) {
+            final ArrayList<String> scope = new ArrayList<String>(currentScope);
+            final int line = subtree.start.getLine();
+            final String newScopeName = lastOpName + "_branch_" + i;
+            scope.add(newScopeName);
+            
+            tags.add(new ProofTreeTag(newScopeName, inputFile.getName(), fileLines.get(line - 1), 'n', line, currentScope));
+            
+            tags.addAll(visitSubtree(subtree, scope).getTags());
+            i++;
         }
 
-        return new SubTree(sequentialBlock, subtrees);
+        return new ProofTreeTags(tags);
     }
 
     @Override
-    public ProofTreeModelElementWrapper<ProofNodeExpression> visitOperator(
-            OperatorContext ctx) {
+    public ProofTreeTags visitSubtree(SubtreeContext ctx) {
+        final ArrayList<String> scope = new ArrayList<String>();
+        scope.add("tree:root");
+
+        final ArrayList<ProofTreeTag> result = new ArrayList<ProofTreeTag>();
+        final ProofTreeTags subtreeRes = visitSubtree(ctx, scope);
+        final int line = ctx.getStart().getLine();
+
+        result.add(new ProofTreeTag("root", inputFile.getName(), fileLines
+                .get(line), 'n', line, scope));
+        result.addAll(subtreeRes.getTags());
+
+        return new ProofTreeTags(result);
+    }
+
+    @Override
+    public ProofTreeTag visitOperator(OperatorContext ctx) {
+        final int line = ctx.start.getLine();
+        String opName = "";
+
         if (ctx.STRING() != null) {
 
-            return new ProofTreeModelElementWrapper<ProofNodeExpression>(
-                    new ProofNodeStringExpression(stripQuotes(ctx.STRING()
-                            .getText())));
+            opName = stripQuotes(ctx.STRING().getText());
 
         }
         else {
 
-            final ArrayList<ProofNodeExpression> children = new ArrayList<ProofNodeExpression>();
-            for (OperatorContext op : ctx.operator()) {
-                children.add(visitOperator(op).getElem());
-            }
-
-            final String opName = visitOpid(ctx.opid()).getElem();
+            opName = visitOpid(ctx.opid()).getElem();
             final OperatorDefinition opdef = opDefs.get(opName);
 
             if (opdef == null) {
@@ -212,11 +249,17 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> imp
                     : visitOperatorLabel(ctx.rightLabel().operatorLabel())
                             .getElem();
 
-            return new ProofTreeModelElementWrapper<ProofNodeExpression>(
-                    new ProofNodeExpression(opdef, children, leftLabel,
-                            rightLabel));
+            if (!leftLabel.isEmpty()) {
+                opName = leftLabel;
+            }
+            else if (!rightLabel.isEmpty()) {
+                opName = rightLabel;
+            }
 
         }
+
+        return new ProofTreeTag(opName + "_" + line, inputFile.getName(),
+                fileLines.get(line - 1), 'n', line, null);
     }
 
     @Override
@@ -228,28 +271,5 @@ public class ProofTreeLoader extends ProofBaseVisitor<ProofTreeModelElement> imp
 
     private String stripQuotes(String str) {
         return str.replaceAll("\"", ""); // Funny hack part II
-    }
-
-    static class ProofTreeModelElementWrapper<T> implements
-            ProofTreeModelElement {
-        private T wrapped;
-
-        public ProofTreeModelElementWrapper(T wrapped) {
-            this.wrapped = wrapped;
-        }
-
-        public T getElem() {
-            return wrapped;
-        }
-
-        @Override
-        public String toString() {
-            return wrapped.toString();
-        }
-    }
-
-    @Override
-    public void setInputFile(File file) {
-        // Nothing to do for this loader
     }
 }

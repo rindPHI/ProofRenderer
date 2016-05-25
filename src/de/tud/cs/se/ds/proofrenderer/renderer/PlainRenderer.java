@@ -4,6 +4,7 @@
 package de.tud.cs.se.ds.proofrenderer.renderer;
 
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
+import de.tud.cs.se.ds.proofrenderer.model.ProofTreeModelElement;
 
 /**
  * A "plain" renderer just returning the String representation of the
@@ -16,7 +17,7 @@ import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
 public class PlainRenderer implements ProofRenderer {
 
     @Override
-    public String render(ProofTree tree, String[] args) {
+    public String render(ProofTreeModelElement tree, String[] args) {
         // TODO Auto-generated method stub
         return render(tree);
     }
@@ -29,7 +30,7 @@ public class PlainRenderer implements ProofRenderer {
      * .se.ds.proofrenderer.model.ProofTree)
      */
     @Override
-    public String render(ProofTree tree) {
+    public String render(ProofTreeModelElement tree) {
         return tree.toString();
     }
 

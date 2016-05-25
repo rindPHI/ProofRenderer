@@ -1,6 +1,7 @@
 package de.tud.cs.se.ds.proofrenderer.renderer;
 
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
+import de.tud.cs.se.ds.proofrenderer.model.ProofTreeModelElement;
 
 public interface ProofRenderer {
     /**
@@ -9,15 +10,15 @@ public interface ProofRenderer {
      * @param tree The {@link ProofTree} to render.
      * @return The rendered {@link ProofTree}.
      */
-    String render(ProofTree tree);
+    String render(ProofTreeModelElement tree);
     
     /**
      * Renders the given {@link ProofTree} to a String representation,
      * tanking the additional arguments into account.
      *
-     * @param tree The {@link ProofTree} to render.
+     * @param parseResult The {@link ProofTree} to render.
      * @param args The arguments for the renderer.
      * @return The rendered {@link ProofTree}.
      */
-    String render(ProofTree tree, String[] args);
+    String render(ProofTreeModelElement parseResult, String[] args);
 }

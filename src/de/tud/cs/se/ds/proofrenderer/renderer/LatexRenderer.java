@@ -19,6 +19,7 @@ import de.tud.cs.se.ds.proofrenderer.model.OperatorDefinition.OperatorPositions;
 import de.tud.cs.se.ds.proofrenderer.model.ProofNodeExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofNodeStringExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
+import de.tud.cs.se.ds.proofrenderer.model.ProofTreeModelElement;
 import de.tud.cs.se.ds.proofrenderer.model.SubTree;
 import de.tud.cs.se.ds.proofrenderer.model.Usepackage;
 
@@ -29,13 +30,13 @@ public class LatexRenderer implements ProofRenderer {
     private boolean fitToPage = false;
 
     @Override
-    public String render(ProofTree tree) {
-        this.proofTree = tree;
+    public String render(ProofTreeModelElement tree) {
+        this.proofTree = (ProofTree) tree;
         return render();
     }
 
     @Override
-    public String render(ProofTree tree, String[] args) {
+    public String render(ProofTreeModelElement tree, String[] args) {
         final Options clopt = new Options();
 
         clopt.addOption(Option.builder("f").longOpt("fit-to-page").hasArg(false)

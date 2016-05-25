@@ -11,6 +11,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
+import de.tud.cs.se.ds.proofrenderer.model.ProofTreeModelElement;
 import de.tud.cs.se.ds.proofrenderer.model.Usepackage;
 
 @RendererInformation(name = "standalone-latex", description = "Creates a standalone LaTeX document containing the specified bussproofs proof")
@@ -19,7 +20,7 @@ public class StandaloneLatexRenderer extends LatexRenderer implements
     private boolean fitToPage = false;
 
     @Override
-    public String render(ProofTree tree, String[] args) {
+    public String render(ProofTreeModelElement tree, String[] args) {
         final Options clopt = new Options();
 
         clopt.addOption(Option.builder("f").longOpt("fit-to-page")
@@ -45,9 +46,11 @@ public class StandaloneLatexRenderer extends LatexRenderer implements
     }
 
     @Override
-    public String render(ProofTree tree) {
+    public String render(ProofTreeModelElement proofTree) {
         final StringBuilder sb = new StringBuilder();
 
+        ProofTree tree = (ProofTree) proofTree;
+        
         sb.append("\\documentclass{article}\n").append(
                 "\\usepackage{bussproofs}\n");
 

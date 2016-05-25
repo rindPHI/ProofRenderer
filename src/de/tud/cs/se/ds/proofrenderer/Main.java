@@ -23,12 +23,15 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.reflections.Reflections;
 
-import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
+import de.tud.cs.se.ds.proofrenderer.model.ProofTreeModelElement;
+import de.tud.cs.se.ds.proofrenderer.parser.IProofTreeLoader;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofLexer;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofParser;
 import de.tud.cs.se.ds.proofrenderer.parser.ProofTreeLoader;
+import de.tud.cs.se.ds.proofrenderer.parser.TagLoader;
 import de.tud.cs.se.ds.proofrenderer.renderer.ProofRenderer;
 import de.tud.cs.se.ds.proofrenderer.renderer.RendererInformation;
+import de.tud.cs.se.ds.proofrenderer.renderer.TagsRenderer;
 
 /**
  * TODO
@@ -41,6 +44,7 @@ public class Main {
     private File output = null;
     private ProofRenderer renderer = null;
     private String[] rendererArgs = new String[0];
+    private IProofTreeLoader loader = new ProofTreeLoader();
 
     /**
      * TODO
@@ -50,18 +54,25 @@ public class Main {
     public Main(String[] args) {
         // Command line arguments handling
         final Options clopt = new Options();
-        final OptionGroup optGroup = new OptionGroup();
-        optGroup.setRequired(true);
+        final OptionGroup fileOrShowOptGroup = new OptionGroup();
+        fileOrShowOptGroup.setRequired(true);
 
-        optGroup.addOption(Option.builder("f").argName("FILE").longOpt("file")
+        fileOrShowOptGroup.addOption(Option.builder("f").argName("FILE").longOpt("file")
                 .desc("The .pt  file to transform").required().hasArg()
                 .type(File.class).build());
-        optGroup.addOption(Option.builder("s").longOpt("show-renderers")
+        fileOrShowOptGroup.addOption(Option.builder("s").longOpt("show-renderers")
                 .hasArg(false).desc("Show available renderers").build());
         
-        clopt.addOption(Option.builder("r").argName("RENDERER")
+        final OptionGroup rendererOrTagsOptGroup = new OptionGroup();
+        rendererOrTagsOptGroup.setRequired(true);
+        
+        rendererOrTagsOptGroup.addOption(Option.builder("r").argName("RENDERER")
                 .longOpt("renderer").desc("The renderer for the proof")
                 .required(false).hasArg().build());
+        rendererOrTagsOptGroup.addOption(Option.builder("t").hasArg(false)
+                .longOpt("extract-tags").desc("Extract tags for the proof files")
+                .required(false).build());
+        
         clopt.addOption(Option.builder("a").longOpt("renderer-args")
                 .argName("RENDERER_ARGS").hasArg().required(false).build());
         clopt.addOption(Option.builder("o").longOpt("output").hasArg()
@@ -72,7 +83,8 @@ public class Main {
         clopt.addOption(Option.builder("h").longOpt("help").hasArg(false)
                 .desc("Display this help").required(false).build());
 
-        clopt.addOptionGroup(optGroup);
+        clopt.addOptionGroup(fileOrShowOptGroup);
+        clopt.addOptionGroup(rendererOrTagsOptGroup);
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -89,24 +101,29 @@ public class Main {
                     throw new ParseException("The given file does not exist.");
                 }
     
-                final String rendererVal = parsed.getOptionValue('r', "latex");
-    
-                renderer = getAvailableRenderers().get(rendererVal);
-    
-                if (renderer == null) {
-                    throw new ParseException("Unknown renderer: '" + rendererVal
-                            + "'\n\n" + getRendererInformation());
-                }
-    
-                final String outputVal = parsed.getOptionValue('o', "-");
-    
-                if (!outputVal.equals("-")) {
-                    output = new File(outputVal);
-                }
-                
-                final String rendererArgString = parsed.getOptionValue("a", "");
-                if (!rendererArgString.isEmpty()) {
-                    rendererArgs = rendererArgString.split(",");
+                if (parsed.hasOption("t")) {
+                    loader = new TagLoader();
+                    renderer = new TagsRenderer();
+                } else {
+                    final String rendererVal = parsed.getOptionValue('r', "latex");
+        
+                    renderer = getAvailableRenderers().get(rendererVal);
+        
+                    if (renderer == null) {
+                        throw new ParseException("Unknown renderer: '" + rendererVal
+                                + "'\n\n" + getRendererInformation());
+                    }
+        
+                    final String outputVal = parsed.getOptionValue('o', "-");
+        
+                    if (!outputVal.equals("-")) {
+                        output = new File(outputVal);
+                    }
+                    
+                    final String rendererArgString = parsed.getOptionValue("a", "");
+                    if (!rendererArgString.isEmpty()) {
+                        rendererArgs = rendererArgString.split(",");
+                    }
                 }
             }
         }
@@ -149,19 +166,19 @@ public class Main {
     }
 
     public String render() throws FileNotFoundException, IOException {
-        ProofTree parseResult = parse();
+        ProofTreeModelElement parseResult = parse();
 
         return renderer.render(parseResult, rendererArgs);
     }
 
-    public ProofTree parse() throws IOException, FileNotFoundException {
+    public ProofTreeModelElement parse() throws IOException, FileNotFoundException {
         final ProofLexer lexer = new ProofLexer(new ANTLRInputStream(
                 new FileInputStream(proofTreeFile)));
         final CommonTokenStream tokens = new CommonTokenStream(lexer);
         final ProofParser parser = new ProofParser(tokens);
 
-        final ProofTreeLoader loader = new ProofTreeLoader();
-        final ProofTree parseResult = loader.visitInit(parser.init());
+        loader.setInputFile(proofTreeFile);
+        final ProofTreeModelElement parseResult = loader.visitInit(parser.init());
 
         return parseResult;
     }
