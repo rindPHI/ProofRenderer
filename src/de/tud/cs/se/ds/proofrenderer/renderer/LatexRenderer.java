@@ -39,13 +39,14 @@ public class LatexRenderer implements ProofRenderer {
     public String render(ProofTreeModelElement tree, String[] args) {
         final Options clopt = new Options();
 
-        clopt.addOption(Option.builder("f").longOpt("fit-to-page").hasArg(false)
-                .desc("Fit proof tree to page size").required(false).build());
+        clopt.addOption(Option.builder("f").longOpt("fit-to-page")
+                .hasArg(false).desc("Fit proof tree to page size")
+                .required(false).build());
 
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine parsed = parser.parse(clopt, args);
-            
+
             if (parsed.hasOption("f")) {
                 fitToPage = true;
             }
@@ -56,7 +57,7 @@ public class LatexRenderer implements ProofRenderer {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("--renderer-args \"...\"", clopt);
         }
-        
+
         return render(tree);
     }
 
@@ -66,67 +67,62 @@ public class LatexRenderer implements ProofRenderer {
         final Set<Usepackage> packages = proofTree.getUsePackages();
         if (fitToPage) {
             packages.add(new Usepackage("graphics", ""));
-            
+
             sb.append("%%% Put into preamble:\n");
             sb.append("% \\newenvironment{scprooftree}[1]%\n")
                     .append("%\t{\\gdef\\scalefactor{#1}\\begin{center}\\proofSkipAmount \\leavevmode}%\n")
                     .append("%\t{\\resizebox{\\scalefactor}{!}{\\DisplayProof}\\proofSkipAmount \\end{center} }\n");
         }
-        
+
         for (Usepackage usepackage : packages) {
-            sb.append("%%% Put into preamble:\n")
-                .append("% ")
-                .append(render(usepackage));
+            sb.append("%%% Put into preamble:\n").append("% ")
+                    .append(render(usepackage));
         }
 
         for (String macro : proofTree.getMacrodefs().keySet()) {
             sb.append(render(proofTree.getMacrodef(macro)));
         }
-        
-        if (proofTree.getUsePackages().size() > 0 || proofTree.getMacrodefs().size() > 0) {
+
+        if (proofTree.getUsePackages().size() > 0
+                || proofTree.getMacrodefs().size() > 0) {
             sb.append("\n");
         }
 
         if (fitToPage) {
             sb.append("\\begin{scprooftree}{\\textwidth}");
-        } else {
+        }
+        else {
             sb.append("\\begin{prooftree}");
         }
-        
+
         sb.append(render(proofTree.getSubtree()));
-        
+
         if (fitToPage) {
             sb.append("\n\\end{scprooftree}");
-        } else {
+        }
+        else {
             sb.append("\n\\end{prooftree}");
         }
-        
+
         return sb.toString();
     }
-    
+
     protected String render(MacroDefinition macro) {
         final StringBuilder sb = new StringBuilder();
-        
-        sb.append("\\newcommand{\\")
-            .append(macro.getName())
-            .append("}[")
-            .append(macro.getNumParams())
-            .append("]{")
-            .append(macro.getStrDef())
-            .append("}\n");
-        
+
+        sb.append("\\newcommand{\\").append(macro.getName()).append("}[")
+                .append(macro.getNumParams()).append("]{")
+                .append(macro.getStrDef()).append("}\n");
+
         return sb.toString();
     }
-    
+
     protected String render(Usepackage usepkg) {
         final StringBuilder sb = new StringBuilder();
-        
-        sb.append("\\usepackage[")
-            .append(usepkg.getArgs())
-            .append("]{")
-            .append(usepkg.getPkgName())
-            .append("}\n");
-        
+
+        sb.append("\\usepackage[").append(usepkg.getArgs()).append("]{")
+                .append(usepkg.getPkgName()).append("}\n");
+
         return sb.toString();
     }
 
@@ -193,12 +189,31 @@ public class LatexRenderer implements ProofRenderer {
                     sb.append(expr.getOperator().getStrDef());
                 }
 
+                final StringBuilder sbChildr = new StringBuilder();
+                int childrenPrec = -1, i = 0;
+
                 for (ProofNodeExpression child : expr.getChildren()) {
 
-                    sb.append(putParenthesesWithPrecedence(expr.getOperator(),
-                            child.getOperator(), render(child)));
+                    // sb.append(putParenthesesWithPrecedence(expr.getOperator(),
+                    // child.getOperator(), render(child)));
+
+                    sbChildr.append(render(child));
                     
+                    if (i == 0) {
+                        childrenPrec = child.getOperator().getPrecedence();
+                    }
+
+                    if (i < expr.getChildren().size() - 1) {
+                        sbChildr.append(", ");
+                    }
+
+                    i++;
                 }
+
+                final String childrenString = putParenthesesWithPrecedence(expr
+                        .getOperator().getPrecedence(), childrenPrec,
+                        sbChildr.toString());
+                sb.append(childrenString);
 
                 if (opPos == OperatorPositions.SUFFIX) {
                     sb.append(expr.getOperator().getStrDef());
@@ -222,22 +237,30 @@ public class LatexRenderer implements ProofRenderer {
         }
     }
 
-    private String putParenthesesWithPrecedence(OperatorDefinition op1,
-            OperatorDefinition op2, String expr) {
+    private String putParenthesesWithPrecedence(int op1prec, int op2prec,
+            String expr) {
         final StringBuilder sb = new StringBuilder();
-        final boolean bindsStronger = op1.getPrecedence() > op2.getPrecedence();
+        final boolean bindsStronger = op1prec > op2prec;
 
         if (bindsStronger) {
-            sb.append("(");
+            sb.append("\\left(");
         }
-        
+
         sb.append(expr);
-        
+
         if (bindsStronger) {
-            sb.append(")");
+            sb.append("\\right)");
         }
-        
+
         return sb.toString();
+    }
+
+    private String putParenthesesWithPrecedence(OperatorDefinition op1,
+            OperatorDefinition op2, String expr) {
+
+        return putParenthesesWithPrecedence(op1.getPrecedence(),
+                op2.getPrecedence(), expr);
+
     }
 
     private String getInvRule(int premises) {
