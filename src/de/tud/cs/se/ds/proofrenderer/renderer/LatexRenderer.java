@@ -190,7 +190,7 @@ public class LatexRenderer implements ProofRenderer {
                 }
 
                 final StringBuilder sbChildr = new StringBuilder();
-                int childrenPrec = -1, i = 0;
+                int childrenPrec = Integer.MAX_VALUE, i = 0;
 
                 for (ProofNodeExpression child : expr.getChildren()) {
 
