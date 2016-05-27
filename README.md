@@ -14,6 +14,9 @@ You get a help message informing about the possible parameters with
 ```bash
 java -jar dist/ProofRenderer.jar -h
 ```
+
+For VIM users, there exists a [plugin for ProofRenderer]() providing TagBar outline support and
+a convenience mapping for translating and compiling prooftree (".pt") definition files.
 	
 ## Example Input/Output
 

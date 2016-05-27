@@ -2,7 +2,7 @@ package de.tud.cs.se.ds.proofrenderer.model;
 
 import java.util.List;
 
-public class ProofTreeTag implements ProofTreeModelElement {
+public class ProofTreeTag implements ProofTreeModelElement, Comparable<ProofTreeTag> {
     
     private String name;
     private String file;
@@ -98,4 +98,10 @@ public class ProofTreeTag implements ProofTreeModelElement {
         
         return sb.toString();
     }
+
+    @Override
+    public int compareTo(ProofTreeTag o) {
+        return this.getName().compareTo(o.getName());
+    }
+    
 }

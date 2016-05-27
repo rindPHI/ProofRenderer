@@ -36,7 +36,6 @@ public class TagLoader extends ProofBaseVisitor<ProofTreeModelElement>
     private HashMap<String, OperatorDefinition> opDefs = new HashMap<String, OperatorDefinition>();
     private File inputFile = null;
     private ArrayList<String> fileLines = new ArrayList<String>();
-
     @Override
     public void setInputFile(File file) {
         this.inputFile = file;
@@ -71,7 +70,7 @@ public class TagLoader extends ProofBaseVisitor<ProofTreeModelElement>
         for (DefopContext defop : ctx.defop()) {
             tags.add(visitDefop(defop));
         }
-
+        
         tags.addAll(visitProof(ctx.proof()).getTags());
 
         return new ProofTreeTags(tags);
@@ -192,10 +191,10 @@ public class TagLoader extends ProofBaseVisitor<ProofTreeModelElement>
         for (SubtreeContext subtree : ctx.subtree()) {
             final ArrayList<String> scope = new ArrayList<String>(currentScope);
             final int line = subtree.start.getLine();
-            final String newScopeName = lastOpName + "_branch_" + i;
+            final String newScopeName = lastOpName + " [branch " + i + "]";
             scope.add(newScopeName);
             
-            tags.add(new ProofTreeTag(newScopeName, inputFile.getName(), fileLines.get(line - 1), 'n', line, currentScope));
+            tags.add(new ProofTreeTag(newScopeName, inputFile.getName(), fileLines.get(line - 1), 't', line, currentScope));
             
             tags.addAll(visitSubtree(subtree, scope).getTags());
             i++;
@@ -214,7 +213,7 @@ public class TagLoader extends ProofBaseVisitor<ProofTreeModelElement>
         final int line = ctx.getStart().getLine();
 
         result.add(new ProofTreeTag("root", inputFile.getName(), fileLines
-                .get(line), 'n', line, scope));
+                .get(line), 't', line, scope));
         result.addAll(subtreeRes.getTags());
 
         return new ProofTreeTags(result);
@@ -258,7 +257,7 @@ public class TagLoader extends ProofBaseVisitor<ProofTreeModelElement>
 
         }
 
-        return new ProofTreeTag(opName + "_" + line, inputFile.getName(),
+        return new ProofTreeTag(opName + " (l:" + line + ")", inputFile.getName(),
                 fileLines.get(line - 1), 'n', line, null);
     }
 
