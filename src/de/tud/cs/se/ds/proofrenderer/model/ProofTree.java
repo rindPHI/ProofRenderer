@@ -5,13 +5,15 @@ import java.util.Set;
 
 public class ProofTree implements ProofTreeModelElement {
     private Set<Usepackage> usePackages = null;
+    private Set<TexInput> latexInputs = null;
     private HashMap<String, OperatorDefinition> opdefs = null;
     private HashMap<String, MacroDefinition> macrodefs = null;
     private SubTree subtree = null;
 
-    public ProofTree(Set<Usepackage> usePackages, HashMap<String, MacroDefinition> macrodefs,
-            HashMap<String, OperatorDefinition> opdefs, SubTree subtree) {
+    public ProofTree(Set<Usepackage> usePackages, Set<TexInput> latexInputs,
+            HashMap<String, MacroDefinition> macrodefs, HashMap<String, OperatorDefinition> opdefs, SubTree subtree) {
         this.usePackages = usePackages;
+        this.latexInputs = latexInputs;
         this.macrodefs = macrodefs;
         this.opdefs = opdefs;
         this.subtree = subtree;
@@ -23,6 +25,14 @@ public class ProofTree implements ProofTreeModelElement {
 
     public void setUsePackages(Set<Usepackage> usePackages) {
         this.usePackages = usePackages;
+    }
+
+    public Set<TexInput> getLatexInputs() {
+        return latexInputs;
+    }
+
+    public void setLatexInputs(Set<TexInput> latexInputs) {
+        this.latexInputs = latexInputs;
     }
 
     public HashMap<String, MacroDefinition> getMacrodefs() {

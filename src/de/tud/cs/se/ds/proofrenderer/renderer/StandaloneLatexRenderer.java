@@ -12,6 +12,7 @@ import org.apache.commons.cli.ParseException;
 
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTreeModelElement;
+import de.tud.cs.se.ds.proofrenderer.model.TexInput;
 import de.tud.cs.se.ds.proofrenderer.model.Usepackage;
 
 @RendererInformation(name = "standalone-latex", description = "Creates a standalone LaTeX document containing the specified bussproofs proof")
@@ -23,7 +24,7 @@ public class StandaloneLatexRenderer extends LatexRenderer implements
     public String render(ProofTreeModelElement tree, String[] args) {
         final Options clopt = new Options();
 
-        clopt.addOption(Option.builder("f").longOpt("fit-to-page")
+        clopt.addOption(Option.builder("p").longOpt("fit-to-page")
                 .hasArg(false).desc("Fit proof tree to page size")
                 .required(false).build());
 
@@ -31,7 +32,7 @@ public class StandaloneLatexRenderer extends LatexRenderer implements
         try {
             CommandLine parsed = parser.parse(clopt, args);
 
-            if (parsed.hasOption("f")) {
+            if (parsed.hasOption("p")) {
                 fitToPage = true;
             }
         }
@@ -61,6 +62,10 @@ public class StandaloneLatexRenderer extends LatexRenderer implements
 
         for (Usepackage usepackage : packages) {
             sb.append(render(usepackage));
+        }
+
+        for (TexInput texinput : tree.getLatexInputs()) {
+            sb.append(render(texinput));
         }
 
         for (String macro : tree.getMacrodefs().keySet()) {

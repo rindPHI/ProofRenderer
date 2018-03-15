@@ -21,6 +21,7 @@ import de.tud.cs.se.ds.proofrenderer.model.ProofNodeStringExpression;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTree;
 import de.tud.cs.se.ds.proofrenderer.model.ProofTreeModelElement;
 import de.tud.cs.se.ds.proofrenderer.model.SubTree;
+import de.tud.cs.se.ds.proofrenderer.model.TexInput;
 import de.tud.cs.se.ds.proofrenderer.model.Usepackage;
 
 @RendererInformation(name = "latex", description = "Creates a bussproofs LaTeX proof for including in a container document")
@@ -39,15 +40,14 @@ public class LatexRenderer implements ProofRenderer {
     public String render(ProofTreeModelElement tree, String[] args) {
         final Options clopt = new Options();
 
-        clopt.addOption(Option.builder("f").longOpt("fit-to-page")
-                .hasArg(false).desc("Fit proof tree to page size")
-                .required(false).build());
+        clopt.addOption(Option.builder("p").longOpt("fit-to-page").hasArg(false)
+                .desc("Fit proof tree to page size").required(false).build());
 
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine parsed = parser.parse(clopt, args);
 
-            if (parsed.hasOption("f")) {
+            if (parsed.hasOption("p")) {
                 fitToPage = true;
             }
         }
@@ -69,14 +69,19 @@ public class LatexRenderer implements ProofRenderer {
             packages.add(new Usepackage("graphics", ""));
 
             sb.append("%%% Put into preamble:\n");
-            sb.append("% \\newenvironment{scprooftree}[1]%\n")
-                    .append("%\t{\\gdef\\scalefactor{#1}\\begin{center}\\proofSkipAmount \\leavevmode}%\n")
+            sb.append("% \\newenvironment{scprooftree}[1]%\n").append(
+                    "%\t{\\gdef\\scalefactor{#1}\\begin{center}\\proofSkipAmount \\leavevmode}%\n")
                     .append("%\t{\\resizebox{\\scalefactor}{!}{\\DisplayProof}\\proofSkipAmount \\end{center} }\n");
         }
 
         for (Usepackage usepackage : packages) {
             sb.append("%%% Put into preamble:\n").append("% ")
                     .append(render(usepackage));
+        }
+
+        for (TexInput texinput : proofTree.getLatexInputs()) {
+            sb.append("%%% Put into preamble:\n").append("% ")
+                    .append(render(texinput));
         }
 
         for (String macro : proofTree.getMacrodefs().keySet()) {
@@ -120,8 +125,21 @@ public class LatexRenderer implements ProofRenderer {
     protected String render(Usepackage usepkg) {
         final StringBuilder sb = new StringBuilder();
 
-        sb.append("\\usepackage[").append(usepkg.getArgs()).append("]{")
-                .append(usepkg.getPkgName()).append("}\n");
+        sb.append("\\usepackage");
+
+        if (!usepkg.getArgs().isEmpty()) {
+            sb.append("[").append(usepkg.getArgs()).append("]");
+        }
+
+        sb.append("{").append(usepkg.getPkgName()).append("}\n");
+
+        return sb.toString();
+    }
+
+    protected String render(TexInput texinput) {
+        final StringBuilder sb = new StringBuilder();
+
+        sb.append("\\input{").append(texinput.getTexfile()).append("}\n");
 
         return sb.toString();
     }
@@ -194,11 +212,8 @@ public class LatexRenderer implements ProofRenderer {
 
                 for (ProofNodeExpression child : expr.getChildren()) {
 
-                    // sb.append(putParenthesesWithPrecedence(expr.getOperator(),
-                    // child.getOperator(), render(child)));
-
                     sbChildr.append(render(child));
-                    
+
                     if (i == 0) {
                         childrenPrec = child.getOperator().getPrecedence();
                     }
@@ -210,8 +225,8 @@ public class LatexRenderer implements ProofRenderer {
                     i++;
                 }
 
-                final String childrenString = putParenthesesWithPrecedence(expr
-                        .getOperator().getPrecedence(), childrenPrec,
+                final String childrenString = putParenthesesWithPrecedence(
+                        expr.getOperator().getPrecedence(), childrenPrec,
                         sbChildr.toString());
                 sb.append(childrenString);
 
@@ -222,16 +237,15 @@ public class LatexRenderer implements ProofRenderer {
             else if (opPos == OperatorPositions.PARAM) {
                 String res = expr.getOperator().getStrDef();
                 for (int i = 0; i < numChildren; i++) {
-                    res = res.replaceAll(
-                            "#" + (i + 1),
-                            render(expr.getChildren().get(i)).replaceAll(
-                                    "\\\\", "\\\\\\\\"));
+                    res = res.replaceAll("#" + (i + 1),
+                            render(expr.getChildren().get(i)).replaceAll("\\\\",
+                                    "\\\\\\\\"));
                 }
                 sb.append(res);
             }
             else {
-                throw new RendererException("Unsupported operator position: '"
-                        + opPos + "'");
+                throw new RendererException(
+                        "Unsupported operator position: '" + opPos + "'");
             }
             return sb.toString();
         }
@@ -278,8 +292,8 @@ public class LatexRenderer implements ProofRenderer {
         case 5:
             return "\\QuinaryInfC";
         default:
-            throw new RendererException("Illegal number of premises: "
-                    + premises);
+            throw new RendererException(
+                    "Illegal number of premises: " + premises);
         }
     }
 

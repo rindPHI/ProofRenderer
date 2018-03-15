@@ -1,16 +1,22 @@
 grammar Proof;
 
 init
-	:	(defop | macro | usepkg) * proof (defop | macro | usepkg) *;
+	:	(defop | macro | usepkg | input) * proof (defop | macro | usepkg) *;
 
 usepkg
 	:	LPAREN 'usepackage' pkgname pkgargs ? RPAREN
 	;
-	
 pkgname
 	:	STRING
 	;
 pkgargs
+	:	STRING
+	;
+
+input
+	:	LPAREN 'input' latexfile RPAREN
+	;
+latexfile
 	:	STRING
 	;
 

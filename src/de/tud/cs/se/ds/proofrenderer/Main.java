@@ -62,9 +62,11 @@ public class Main {
                 .type(File.class).build());
         fileOrShowOptGroup.addOption(Option.builder("s").longOpt("show-renderers")
                 .hasArg(false).desc("Show available renderers").build());
+        fileOrShowOptGroup.addOption(Option.builder("h").longOpt("help").hasArg(false)
+                .desc("Display this help").required(false).build());
         
         final OptionGroup rendererOrTagsOptGroup = new OptionGroup();
-        rendererOrTagsOptGroup.setRequired(true);
+        rendererOrTagsOptGroup.setRequired(false);
         
         rendererOrTagsOptGroup.addOption(Option.builder("r").argName("RENDERER")
                 .longOpt("renderer").desc("The renderer for the proof")
@@ -74,14 +76,12 @@ public class Main {
                 .required(false).build());
         
         clopt.addOption(Option.builder("a").longOpt("renderer-args")
+                .desc("Arguments for renderers. Put this to the *end* of your invocation.")
                 .argName("RENDERER_ARGS").hasArg().required(false).build());
         clopt.addOption(Option.builder("o").longOpt("output").hasArg()
                 .argName("OUTPUT")
                 .desc("Desired output file or - for command line output")
                 .build());
-
-        clopt.addOption(Option.builder("h").longOpt("help").hasArg(false)
-                .desc("Display this help").required(false).build());
 
         clopt.addOptionGroup(fileOrShowOptGroup);
         clopt.addOptionGroup(rendererOrTagsOptGroup);
@@ -92,6 +92,10 @@ public class Main {
 
             if (parsed.hasOption("s")) {
                 System.out.println(getRendererInformation());
+                System.exit(0);
+            } else if (parsed.hasOption("h")) {
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("java -jar ProofRenderer.jar", clopt);
                 System.exit(0);
             } else {
             
